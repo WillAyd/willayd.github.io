@@ -3,8 +3,10 @@ Fundamental Python Debugging Part 3 - Cython Extensions
 *******************************************************
 
 :date: 2023-03-10
-:tags: python
+:category: debugging
+:tags: python, cython
 :author: Will Ayd
+:summary: This article shows you how to use cygdb to debug Cython extensions. While dauting at first glance, the knowledge of pdb and gdb we gained in the previous two articles makes it much easier to step through Cython!
 
 For the unaware, Cython is a transpiler from a Python-like syntax into C files. This gets you close to C performance while writing files that aren't *that* dissimilar from Python. It is used extensively in the scientific Python community to generate high-performance extensions. A common approach to optimize Python libraries is to make sure you are as efficient as possible in pure Python, before building your code in Cython, and commonly as a last resort writing your C/C++ extensions by hand.
 
@@ -18,7 +20,7 @@ Setting up our environment
 For this chapter we will leverage the same image as in the last, so start with:
 
 .. code-block:: sh
-                
+
    docker pull willayd/cpython-debugging
 
 In addition to the items outlined in the previous chapter, this image also includes Cython as a pip-installed package. If you don't care to use the docker image you can also follow the instructions in the `Debugging your Cython program documentation <https://cython.readthedocs.io/en/latest/src/userguide/debugging.html>`_, but be aware that some of the interactions between Cython, gdb and Python aren't very intuitive, especially if using Python installed as a virtual image.
@@ -82,7 +84,7 @@ With the Python interpret running let us import and execute our function.
 
    >>> import debugging_cython
    >>> debugging_cython.say_hello_and_return_none()
-   
+
    Breakpoint 1, __pyx_pw_16debugging_cython_1say_hello_and_return_none (__pyx_self=0x0, unused=0x0) at debugging_cython.c:1202
    1202	  PyObject *__pyx_r = 0;
    1    def say_hello_and_return_none():
@@ -111,9 +113,9 @@ We've hit a breakpoint at line 1202 of the generated ``debugging_cython.c`` file
 .. code-block:: sh
 
    (gdb) help cy
-   
+
        Invoke a Cython command. Available commands are:
-   
+
            cy import
            cy break
            cy step
@@ -131,7 +133,7 @@ We've hit a breakpoint at line 1202 of the generated ``debugging_cython.c`` file
            cy locals
            cy globals
            cy exec
-   
+
    ...
    Type "help cy" followed by cy subcommand name for full documentation.
    Type "apropos word" to search for commands related to "word".
@@ -146,7 +148,7 @@ Our previous program leveraged a ``def`` function, which Cython makes callable f
 For debugging purposes, let's create ``debugging_cython2.pyx`` and change our function from ``def`` to ``cpdef``.
 
 .. code-block:: python
-                
+
    cpdef say_hello_from_cpdef():
        print("Hello from the cpdef function")
 
@@ -176,7 +178,7 @@ What is interesting here is that we now have 2 breakpoints! The reason for this 
    Type "help", "copyright", "credits" or "license" for more information.
    >>> import debugging_cython2
    >>> debugging_cython2.say_hello_from_cpdef()
-   
+
    Breakpoint 2, __pyx_pw_17debugging_cython2_1say_hello_from_cpdef (__pyx_self=<module at remote 0x7f1da030d6d0>, unused=0x0) at debugging_cython2.c:1227
    1227	  PyObject *__pyx_r = 0;
    (gdb) cy list
@@ -191,7 +193,7 @@ What is interesting here is that we now have 2 breakpoints! The reason for this 
      1230      __pyx_r = __pyx_pf_17debugging_cython2_say_hello_from_cpdef(__pyx_self);
      1231
    (gdb) cy cont
-   
+
    Breakpoint 1, __pyx_f_17debugging_cython2_say_hello_from_cpdef (__pyx_skip_dispatch=0) at debugging_cython2.c:1194
    1194	  PyObject *__pyx_r = NULL;
    1    cpdef say_hello_from_cpdef():
@@ -228,14 +230,14 @@ If you didn't want the first breakpoint to be hit from Cython, you ``delete 1`` 
    Type "help", "copyright", "credits" or "license" for more information.
    >>> import debugging_cython2
    >>> debugging_cython2.say_hello_from_cpdef()
-   
+
    Breakpoint 2, __pyx_pw_17debugging_cython2_1say_hello_from_cpdef (__pyx_self=<module at remote 0x7f8825188650>, unused=0x0) at debugging_cython2.c:1227
    1227	  PyObject *__pyx_r = 0;
    1227      PyObject *__pyx_r = 0;
    (gdb) cy cont
    Hello from the cpdef function
    >>> debugging_cython2.say_hello_from_cpdef()
-   
+
    Breakpoint 2, __pyx_pw_17debugging_cython2_1say_hello_from_cpdef (__pyx_self=<module at remote 0x7f8825188650>, unused=0x0) at debugging_cython2.c:1227
    1227	  PyObject *__pyx_r = 0;
    1227      PyObject *__pyx_r = 0;
