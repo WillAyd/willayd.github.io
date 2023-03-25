@@ -4,6 +4,8 @@ SITEURL = 'http://127.0.0.1:8000'
 TIMEZONE = 'US/Pacific'
 DEFAULT_LANG = 'en'
 
+ARTICLE_ORDER_BY = 'date'
+
 SUBTITLE = 'Will Ayd'
 SUBTEXT = '''Welcome to my personal website, where I write about
 Python, pandas, Emacs, C, and anything development-wise that I may find
@@ -26,10 +28,12 @@ STATIC_PATHS = [
     'images',
     'images/favicon.ico',
     'extra/robots.txt',
+    'extra/CNAME',
     ]
 EXTRA_PATH_METADATA = {
     'extra/robots.txt': {'path': 'robots.txt'},
     'images/favicon.ico': {'path': 'favicon.ico'},
+    'extra/CNAME': {'path': 'CNAME'},
     }
 DISPLAY_PAGES_ON_MENU = True
 DIRECT_TEMPLATES = (('index', 'search', 'tags', 'categories', 'archives',))
