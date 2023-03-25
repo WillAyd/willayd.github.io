@@ -1,0 +1,6 @@
+pre-commit
+pelican
+pelican-search
+pelican-neighbors
+pelican-readtime
+spelling
