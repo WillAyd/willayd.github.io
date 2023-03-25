@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="32mm"
+   height="32mm"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="wa_logo.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#999999"
+     borderopacity="1"
+     inkscape:pageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="6.6724609"
+     inkscape:cx="60.472441"
+     inkscape:cy="60.472441"
+     inkscape:window-width="1850"
+     inkscape:window-height="1016"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="text15670" />
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <g
+       aria-label="WA"
+       id="text1155"
+       style="font-size:21.1666px;line-height:1.25;stroke-width:0.529166">
+      <g
+         aria-label="WA"
+         id="text15670"
+         style="font-size:10.5833px;stroke-width:0.140008"
+         transform="translate(0.57864064,3.2127936)">
+        <path
+           d="M 25.006461,24.211 H 19.476092 L 16.458143,11.333147 Q 15.905006,9.0577906 15.525852,6.5770306 15.146696,8.6469705 14.909725,9.7372419 14.671225,10.811717 11.544084,24.211 H 6.0135937 L 0.27780914,1.9473258 H 5.002321 L 8.2257472,16.326278 8.9525623,19.802509 Q 9.3950112,17.606162 9.8056603,15.615231 10.232209,13.608494 12.965884,1.9473258 h 5.214324 L 20.99268,13.798111 q 0.331759,1.327286 1.12187,6.004398 l 0.395055,-1.832907 0.837503,-3.634241 2.686189,-12.3880199 h 4.724512 z"
+           style="font-weight:bold;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans, Bold';stroke-width:0.4281"
+           id="path25877" />
+      </g>
+    </g>
+  </g>
+	<style>
+    @media (prefers-color-scheme:dark){:root{filter:invert(100%)}}
+  </style>  
+</svg>

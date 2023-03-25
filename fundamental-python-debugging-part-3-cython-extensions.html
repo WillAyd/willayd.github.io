@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Pelican" />
+    <meta name="description" content="Will Ayd Blog Posts">
+    <title>Fundamental Python Debugging Part 3 - Cython Extensions</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/theme/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/theme/css/pygment.css" />
+    <link rel="shortcut icon" href="http://127.0.0.1:8000/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="http://127.0.0.1:8000/theme/css/stork.css">
+    <link rel="stylesheet" media="screen and (prefers-color-scheme: dark)"
+        href="http://127.0.0.1:8000/theme/css/stork-dark.css">
+    <link
+        href="http://127.0.0.1:8000/feeds/all.atom.xml"
+        type="application/atom+xml" rel="alternate" title="Will Ayd Atom Feed" />
+<meta name="description" content="This article shows you how to use cygdb to debug Cython extensions. While dauting at first glance, the knowledge of pdb and gdb we gained in the..." />
+</head>
+
+<body class="min-h-screen flex flex-col max-w-7xl lg:max-w-none text-zinc-800 bg-neutral-100 
+    dark:bg-neutral-900 dark:text-zinc-300 container mx-auto justify-center md:px-3 ">
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+    <nav class="sm:flex sm:justify-between xl:ml-32 pl-4 items-center">
+        <div class="flex pt-4">
+            <h1 class="font-semibold text-2xl"><a href="http://127.0.0.1:8000/">Will Ayd</a></h1>
+            <button id="theme-toggle" type="button" aria-label="Light|Dark"
+                class="text-zinc-700 dark:text-zinc-400 rounded-full focus:outline-none text-sm ml-2 p-1">
+                <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                        fill-rule="evenodd" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+        <ul class="flex flex-wrap lg:mr-24 md:pt-0">
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/archives.html">Archive</a></li>
+            <li class="mr-4 pt-6"><a                     href="http://127.0.0.1:8000/categories.html">Categories</a></li>
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/tags.html">Tags</a></li>
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/search.html">Search</a></li>
+        </ul>
+    </nav>
+    <div class="flex-grow md:max-w-screen-md md:mx-auto md:w-3/4 px-4">
+        <nav class="text-zinc-800 dark:text-zinc-300 mt-12 pb-2 md:mt-16" aria-label="Breadcrumb">
+            <ul class="p-0 inline-flex items-center">
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/" class="text-zinc-800 dark:text-zinc-300 inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                            </path>
+                        </svg>
+                        Home
+                    </a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/categories.html">Categories</a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/category/debugging.html">debugging</a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+            </ul>
+        </nav>
+
+<main>
+  <header>
+    <h1 class="font-semibold text-3xl my-2">Fundamental Python Debugging Part 3 - Cython Extensions</h1>
+    <footer class="flex text-sm text-zinc-800 dark:text-zinc-400">
+      <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
+        <time>March 10, 2023</time>
+        <div>
+          <span>&nbsp;·&nbsp;13 min read</span>
+        </div>
+        <div>
+          <span>&nbsp;·&nbsp;Will Ayd</span>
+        </div>
+      </div>
+    </footer>
+  </header>
+  <details class="flex flex-col my-6 p-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg">
+    <summary class="text-lg font-bold">Table of contents</summary>
+    <div class="mx-4 px-4 underline">
+      <div id="toc"><ul><li><a class="toc-href" href="#setting-up-our-environment" title="Setting up our environment">Setting up our environment</a></li><li><a class="toc-href" href="#build-our-first-cython-extension" title="Build our first Cython extension">Build our first Cython extension</a></li><li><a class="toc-href" href="#using-cygdb" title="Using cygdb">Using cygdb</a></li><li><a class="toc-href" href="#cpdef-functions" title="cpdef functions">cpdef functions</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
+    </div>
+  </details>
+  <div class="max-w-7xl container mx-auto my-8 text-zinc-800 dark:text-zinc-300  
+              prose lg:max-w-none prose-headings:text-zinc-800 prose-headings:dark:text-zinc-300 
+              prose-h1:text-3xl lg:prose-h1:text-3xl prose-headings:font-semibold 
+              prose-pre:bg-zinc-200 prose-pre:text-zinc-800
+              dark:prose-pre:bg-zinc-800 dark:prose-pre:text-zinc-200
+              prose-blockquote:text-zinc-800
+              dark:prose-blockquote:text-zinc-200
+              prose-a:text-slate-600 prose-a:font-normal
+              dark:prose-a:text-slate-400
+              dark:prose-strong:text-zinc-200 
+              dark:prose-code:text-zinc-200
+              dark:prose-code:bg-zinc-800
+              prose-code:bg-zinc-200
+              prose-code:font-light
+              prose-img:rounded-md
+              sm:text-left md:text-justify
+              ">
+    <p>For the unaware, Cython is a transpiler from a Python-like syntax into C files. This gets you close to C performance while writing files that aren't <em>that</em> dissimilar from Python. It is used extensively in the scientific Python community to generate high-performance extensions. A common approach to optimize Python libraries is to make sure you are as efficient as possible in pure Python, before building your code in Cython, and commonly as a last resort writing your C/C++ extensions by hand.</p>
+<p>In spite of this pattern we are introducing Cython as the third part of the debugging series, after already having debugged C extensions. Why is that? Well, it turns out that the Cython debugger is in fact a <a class="reference external" href="https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python">gdb python extension</a>, which we saw CPython also leverage in the last chapter. We aren't doing anything novel in this chapter but just walking through some of the conveniences the <tt class="docutils literal">cygdb</tt> extension provides (interested users can find the source code <a class="reference external" href="https://github.com/cython/cython/blob/master/Cython/Debugger/Cygdb.py">here</a>).</p>
+<p>If you haven't read the previous article on <a class="reference external" href="http://127.0.0.1:8000/fundamental-python-debugging-part-2-python-extensions.html">debugging Python extensions with gdb</a>, I <em>highly recommend</em> that you do so before continuing here. Although writing Cython can be thought of as a stepping stone to writing C/C++ extensions, the inverse is true when it comes to debugging.</p>
+<div class="section" id="setting-up-our-environment">
+<h2 id="setting-up-our-environment">Setting up our environment</h2>
+<p>For this chapter we will leverage the same image as in the last, so start with:</p>
+<div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>willayd/cpython-debugging
+</pre></div>
+<p>In addition to the items outlined in the previous chapter, this image also includes Cython as a pip-installed package. If you don't care to use the docker image you can also follow the instructions in the <a class="reference external" href="https://cython.readthedocs.io/en/latest/src/userguide/debugging.html">Debugging your Cython program documentation</a>, but be aware that some of the interactions between Cython, gdb and Python aren't very intuitive, especially if using Python installed as a virtual image.</p>
+<p>If using the docker image above, be sure to run it as a container and mount a local directory for development into the container at <tt class="docutils literal">/host</tt>. As in the previous section, I will be putting my work in a directory called <tt class="docutils literal"><span class="pre">~/code-demos</span></tt>.</p>
+<div class="highlight"><pre><span></span>willayd@willayd:~$<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-w<span class="w"> </span>/data<span class="w"> </span>-v<span class="w"> </span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/code-demos:/data<span class="w"> </span>willayd/cpython-debugging
+</pre></div>
+</div>
+<div class="section" id="build-our-first-cython-extension">
+<h2 id="build-our-first-cython-extension">Build our first Cython extension</h2>
+<p>We are going to start with the same extension we created in the previous chapter. Let's create a file named <tt class="docutils literal">debugging_cython.pyx</tt> in the folder on your computer that you mounted into docker and insert these contents:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">say_hello_and_return_none</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Hello from the Cython extension"</span><span class="p">)</span>
+</pre></div>
+<p>That's it! From here we now have two steps we need to follow to get this converted into an importable extension:</p>
+<blockquote>
+<ol class="arabic simple">
+<li>Transpile the Cython file into a C module</li>
+<li>Build a shared library from the C module</li>
+</ol>
+</blockquote>
+<p>The <tt class="docutils literal">cython</tt> command can help us with Step 1; Step 2 builds on a lot of knowledge from the previous chapter. Here are the commands:</p>
+<div class="highlight"><pre><span></span>root@f241800d6a12:/data#<span class="w"> </span>cython<span class="w"> </span>--gdb<span class="w"> </span>debugging_cython.pyx
+root@f241800d6a12:/data#<span class="w"> </span>gcc<span class="w"> </span>-g3<span class="w"> </span>-Wall<span class="w"> </span>-Werror<span class="w"> </span>-std<span class="o">=</span>c17<span class="w"> </span>-shared<span class="w"> </span>-fPIC<span class="w"> </span>-I/usr/local/include/python3.10d<span class="w"> </span>debugging_cython.c<span class="w"> </span>-o<span class="w"> </span>debugging_cython.so
+</pre></div>
+<p>With the extension built, you can import the module and call the function.</p>
+<div class="highlight"><pre><span></span>root@f241800d6a12:/data#<span class="w"> </span>python3
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_cython
+&gt;&gt;&gt;<span class="w"> </span>debugging_cython.say_hello_and_return_none<span class="o">()</span>
+Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>Cython<span class="w"> </span>extension
+</pre></div>
+</div>
+<div class="section" id="using-cygdb">
+<h2 id="using-cygdb">Using cygdb</h2>
+<p>If you inspect the output of <tt class="docutils literal">debugging_cython.c</tt> which was generated in the previous section, you <em>could</em> debug it using <tt class="docutils literal">gdb</tt> as if it were a normal C module, because <em>it is</em>. It certainly doesn't look that anything that you would have written by hand, but there isn't any real magic to what is happening here; Cython takes Python-like code and transpiles a C file out of it. The rest of the tooling that we've seen in the previous chapter can pick things up from there. However, because the file was auto-generated you lose a lot of the abstractions that you get from writing Python-like code, and end up stepping through a tangled web of variables you aren't familiar with in gdb. <tt class="docutils literal">pdb</tt> cannot debug Cython files for us, so we need to use <tt class="docutils literal">cygdb</tt>. We can then set a breakpoint at our function using the <tt class="docutils literal">cy break</tt> command and open up a Python interpreter with <tt class="docutils literal">cy run</tt></p>
+<div class="highlight"><pre><span></span>root@fad66408f996:/data#<span class="w"> </span>cygdb
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span><span class="nb">break</span><span class="w"> </span>say_hello_and_return_none
+Function<span class="w"> </span><span class="s2">"__pyx_pw_16debugging_cython_1say_hello_and_return_none"</span><span class="w"> </span>not<span class="w"> </span>defined.
+Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>__pyx_pw_16debugging_cython_1say_hello_and_return_none<span class="o">)</span><span class="w"> </span>pending.
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>run
+Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
+Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;
+</pre></div>
+<p>With the Python interpret running let us import and execute our function.</p>
+<div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_cython
+&gt;&gt;&gt;<span class="w"> </span>debugging_cython.say_hello_and_return_none<span class="o">()</span>
+
+Breakpoint<span class="w"> </span><span class="m">1</span>,<span class="w"> </span>__pyx_pw_16debugging_cython_1say_hello_and_return_none<span class="w"> </span><span class="o">(</span><span class="nv">__pyx_self</span><span class="o">=</span>0x0,<span class="w"> </span><span class="nv">unused</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_cython.c:1202
+<span class="m">1202</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="m">1</span><span class="w">    </span>def<span class="w"> </span>say_hello_and_return_none<span class="o">()</span>:
+</pre></div>
+<p>We've hit a breakpoint at line 1202 of the generated <tt class="docutils literal">debugging_cython.c</tt> file. The commands the Cython debugger exposes are not really that different from what we saw with <tt class="docutils literal">gdb</tt> in the previous chapter. The difference is that the <tt class="docutils literal">gdb</tt> built-in commands will work as if you are debugging <tt class="docutils literal">debugging_cython.c</tt>, whereas the <tt class="docutils literal">cygdb</tt> commands will work as if you are debugging <tt class="docutils literal">debugging_cython.pyx</tt>. Inputting <tt class="docutils literal">list</tt> and then <tt class="docutils literal">cy list</tt> will help us see this in action:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>list
+<span class="w">         </span><span class="m">1</span><span class="w">    </span>def<span class="w"> </span>say_hello_and_return_none<span class="o">()</span>:1197
+<span class="m">1198</span><span class="w"> </span>/*<span class="w"> </span>Python<span class="w"> </span>wrapper<span class="w"> </span>*/
+<span class="m">1199</span><span class="w"> </span>static<span class="w"> </span>PyObject<span class="w"> </span>*__pyx_pw_16debugging_cython_1say_hello_and_return_none<span class="o">(</span>PyObject<span class="w"> </span>*__pyx_self,<span class="w"> </span>CYTHON_UNUSED<span class="w"> </span>PyObject<span class="w"> </span>*unused<span class="o">)</span><span class="p">;</span><span class="w"> </span>/*proto*/
+<span class="m">1200</span><span class="w"> </span>static<span class="w"> </span>PyMethodDef<span class="w"> </span><span class="nv">__pyx_mdef_16debugging_cython_1say_hello_and_return_none</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="s2">"say_hello_and_return_none"</span>,<span class="w"> </span><span class="o">(</span>PyCFunction<span class="o">)</span>__pyx_pw_16debugging_cython_1say_hello_and_return_none,<span class="w"> </span>METH_NOARGS,<span class="w"> </span><span class="m">0</span><span class="o">}</span><span class="p">;</span>
+<span class="m">1201</span><span class="w"> </span>static<span class="w"> </span>PyObject<span class="w"> </span>*__pyx_pw_16debugging_cython_1say_hello_and_return_none<span class="o">(</span>PyObject<span class="w"> </span>*__pyx_self,<span class="w"> </span>CYTHON_UNUSED<span class="w"> </span>PyObject<span class="w"> </span>*unused<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="m">1202</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="m">1203</span><span class="w">   </span>__Pyx_RefNannyDeclarations
+<span class="m">1204</span><span class="w">   </span>__Pyx_RefNannySetupContext<span class="o">(</span><span class="s2">"say_hello_and_return_none (wrapper)"</span>,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="m">1205</span><span class="w">   </span><span class="nv">__pyx_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>__pyx_pf_16debugging_cython_say_hello_and_return_none<span class="o">(</span>__pyx_self<span class="o">)</span><span class="p">;</span>
+<span class="m">1206</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>list
+&gt;<span class="w">    </span><span class="m">1</span><span class="w">    </span>def<span class="w"> </span>say_hello_and_return_none<span class="o">()</span>:
+<span class="w">     </span><span class="m">2</span><span class="w">        </span>print<span class="o">(</span><span class="s2">"Hello from the Cython extension"</span><span class="o">)</span>
+</pre></div>
+<p><tt class="docutils literal">help cy</tt> gives a nice overview within <tt class="docutils literal">gdb</tt> of the available commands. It is a much smaller set of commands than what <tt class="docutils literal">gdb</tt> offers, but should cover the majority of needs in normal development.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span>cy
+
+<span class="w">    </span>Invoke<span class="w"> </span>a<span class="w"> </span>Cython<span class="w"> </span>command.<span class="w"> </span>Available<span class="w"> </span>commands<span class="w"> </span>are:
+
+<span class="w">        </span>cy<span class="w"> </span>import
+<span class="w">        </span>cy<span class="w"> </span><span class="nb">break</span>
+<span class="w">        </span>cy<span class="w"> </span>step
+<span class="w">        </span>cy<span class="w"> </span>next
+<span class="w">        </span>cy<span class="w"> </span>run
+<span class="w">        </span>cy<span class="w"> </span>cont
+<span class="w">        </span>cy<span class="w"> </span>finish
+<span class="w">        </span>cy<span class="w"> </span>up
+<span class="w">        </span>cy<span class="w"> </span>down
+<span class="w">        </span>cy<span class="w"> </span><span class="k">select</span>
+<span class="w">        </span>cy<span class="w"> </span>bt<span class="w"> </span>/<span class="w"> </span>cy<span class="w"> </span>backtrace
+<span class="w">        </span>cy<span class="w"> </span>list
+<span class="w">        </span>cy<span class="w"> </span>print
+<span class="w">        </span>cy<span class="w"> </span><span class="nb">set</span>
+<span class="w">        </span>cy<span class="w"> </span>locals
+<span class="w">        </span>cy<span class="w"> </span>globals
+<span class="w">        </span>cy<span class="w"> </span><span class="nb">exec</span>
+
+...
+Type<span class="w"> </span><span class="s2">"help cy"</span><span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span>cy<span class="w"> </span>subcommand<span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>full<span class="w"> </span>documentation.
+Type<span class="w"> </span><span class="s2">"apropos word"</span><span class="w"> </span>to<span class="w"> </span>search<span class="w"> </span><span class="k">for</span><span class="w"> </span>commands<span class="w"> </span>related<span class="w"> </span>to<span class="w"> </span><span class="s2">"word"</span>.
+Type<span class="w"> </span><span class="s2">"apropos -v word"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>full<span class="w"> </span>documentation<span class="w"> </span>of<span class="w"> </span>commands<span class="w"> </span>related<span class="w"> </span>to<span class="w"> </span><span class="s2">"word"</span>.
+Command<span class="w"> </span>name<span class="w"> </span>abbreviations<span class="w"> </span>are<span class="w"> </span>allowed<span class="w"> </span><span class="k">if</span><span class="w"> </span>unambiguous.
+</pre></div>
+</div>
+<div class="section" id="cpdef-functions">
+<h2 id="cpdef-functions">cpdef functions</h2>
+<p>Our previous program leveraged a <tt class="docutils literal">def</tt> function, which Cython makes callable from the Python interpreter. Cython also offers <tt class="docutils literal">cdef</tt> functions (not callable from Python) and <tt class="docutils literal">cpdef</tt> functions, which essentially generate a <tt class="docutils literal">def</tt> and a <tt class="docutils literal">cdef</tt> for you. A detailed explanation of why you would choose those is outside the scope of this article; if you need a primer be sure to check out the wonderful <a class="reference external" href="https://cython.readthedocs.io/en/latest/src/userguide/language_basics.html">Cython language basics documentation</a>.</p>
+<p>For debugging purposes, let's create <tt class="docutils literal">debugging_cython2.pyx</tt> and change our function from <tt class="docutils literal">def</tt> to <tt class="docutils literal">cpdef</tt>.</p>
+<div class="highlight"><pre><span></span><span class="n">cpdef</span> <span class="n">say_hello_from_cpdef</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"Hello from the cpdef function"</span><span class="p">)</span>
+</pre></div>
+<p>If you are still running <tt class="docutils literal">cygdb</tt> from the previous section, go ahead and <tt class="docutils literal">exit</tt> to get back to your standard terminal. From there, we want to transpile and create our new shared library:</p>
+<div class="highlight"><pre><span></span>root@f241800d6a12:/data#<span class="w"> </span>cython<span class="w"> </span>--gdb<span class="w"> </span>debugging_cython2.pyx
+root@f241800d6a12:/data#<span class="w"> </span>gcc<span class="w"> </span>-g3<span class="w"> </span>-Wall<span class="w"> </span>-Werror<span class="w"> </span>-std<span class="o">=</span>c17<span class="w"> </span>-shared<span class="w"> </span>-fPIC<span class="w"> </span>-I/usr/local/include/python3.10d<span class="w"> </span>debugging_cython2.c<span class="w"> </span>-o<span class="w"> </span>debugging_cython2.so
+</pre></div>
+<p>Fire up <tt class="docutils literal">cygdb</tt> again and set another breakpoint on that function:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span><span class="nb">break</span><span class="w"> </span>say_hello_from_cpdef
+Function<span class="w"> </span><span class="s2">"__pyx_f_17debugging_cython2_say_hello_from_cpdef"</span><span class="w"> </span>not<span class="w"> </span>defined.
+Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>__pyx_f_17debugging_cython2_say_hello_from_cpdef<span class="o">)</span><span class="w"> </span>pending.
+Function<span class="w"> </span><span class="s2">"__pyx_pw_17debugging_cython2_1say_hello_from_cpdef"</span><span class="w"> </span>not<span class="w"> </span>defined.
+Breakpoint<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="o">(</span>__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="o">)</span><span class="w"> </span>pending.
+</pre></div>
+<p>What is interesting here is that we now have 2 breakpoints! The reason for this again is that <tt class="docutils literal">cpdef</tt> generates two functions for us - one purely accessible from C and one accessible from Python. Go ahead and <tt class="docutils literal">cy run</tt> to get the Python interpreter started; we will then run <tt class="docutils literal">cy cont</tt> to continue past each breakpoint.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>run
+Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
+Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_cython2
+&gt;&gt;&gt;<span class="w"> </span>debugging_cython2.say_hello_from_cpdef<span class="o">()</span>
+
+Breakpoint<span class="w"> </span><span class="m">2</span>,<span class="w"> </span>__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="w"> </span><span class="o">(</span><span class="nv">__pyx_self</span><span class="o">=</span>&lt;module<span class="w"> </span>at<span class="w"> </span>remote<span class="w"> </span>0x7f1da030d6d0&gt;,<span class="w"> </span><span class="nv">unused</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1227
+<span class="m">1227</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>list
+<span class="w">  </span><span class="m">1222</span><span class="w">    </span><span class="o">}</span>
+<span class="w">  </span><span class="m">1223</span>
+<span class="w">  </span><span class="m">1224</span><span class="w">    </span>/*<span class="w"> </span>Python<span class="w"> </span>wrapper<span class="w"> </span>*/
+<span class="w">  </span><span class="m">1225</span><span class="w">    </span>static<span class="w"> </span>PyObject<span class="w"> </span>*__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="o">(</span>PyObject<span class="w"> </span>*__pyx_self,<span class="w"> </span>CYTHON_UNUSED<span class="w"> </span>PyObject<span class="w"> </span>*unused<span class="o">)</span><span class="p">;</span><span class="w"> </span>/*proto*/
+<span class="w">  </span><span class="m">1226</span><span class="w">    </span>static<span class="w"> </span>PyObject<span class="w"> </span>*__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="o">(</span>PyObject<span class="w"> </span>*__pyx_self,<span class="w"> </span>CYTHON_UNUSED<span class="w"> </span>PyObject<span class="w"> </span>*unused<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+&gt;<span class="w"> </span><span class="m">1227</span><span class="w">      </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="w">  </span><span class="m">1228</span><span class="w">      </span>__Pyx_RefNannyDeclarations
+<span class="w">  </span><span class="m">1229</span><span class="w">      </span>__Pyx_RefNannySetupContext<span class="o">(</span><span class="s2">"say_hello_from_cpdef (wrapper)"</span>,<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="p">;</span>
+<span class="w">  </span><span class="m">1230</span><span class="w">      </span><span class="nv">__pyx_r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>__pyx_pf_17debugging_cython2_say_hello_from_cpdef<span class="o">(</span>__pyx_self<span class="o">)</span><span class="p">;</span>
+<span class="w">  </span><span class="m">1231</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>cont
+
+Breakpoint<span class="w"> </span><span class="m">1</span>,<span class="w"> </span>__pyx_f_17debugging_cython2_say_hello_from_cpdef<span class="w"> </span><span class="o">(</span><span class="nv">__pyx_skip_dispatch</span><span class="o">=</span><span class="m">0</span><span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1194
+<span class="m">1194</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span>NULL<span class="p">;</span>
+<span class="m">1</span><span class="w">    </span>cpdef<span class="w"> </span>say_hello_from_cpdef<span class="o">()</span>:
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>list
+&gt;<span class="w">    </span><span class="m">1</span><span class="w">    </span>cpdef<span class="w"> </span>say_hello_from_cpdef<span class="o">()</span>:
+<span class="w">     </span><span class="m">2</span><span class="w">        </span>print<span class="o">(</span><span class="s2">"Hello from the cpdef function"</span><span class="o">)</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>cont
+Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>cpdef<span class="w"> </span><span class="k">function</span>
+&gt;&gt;&gt;<span class="w"> </span>quit<span class="o">()</span>
+<span class="o">[</span>Inferior<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>process<span class="w"> </span><span class="m">105</span><span class="o">)</span><span class="w"> </span>exited<span class="w"> </span>normally<span class="o">]</span>
+</pre></div>
+<p>Note that the <tt class="docutils literal">cy list</tt> in the first breakpoint lists C source code, whereas the second <tt class="docutils literal">cy list</tt> shows the Cython source code. Given the purpose of <tt class="docutils literal">cpdef</tt> this may not be too surprising, but it may be confusing to new users.</p>
+<p>## Managing cy break breakpoints</p>
+<p>While <tt class="docutils literal">cy break</tt> lets you create breakpoints, it does not give you any tools to delete, enable, disable, etc... However, you can work around this issue by using <tt class="docutils literal">gdb</tt>'s native commands for managing breakpoints, which we detailed on in the previous debugging article. Continuing with our example above, a <tt class="docutils literal">info break</tt> yields the following:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>info<span class="w"> </span><span class="nb">break</span>
+Num<span class="w">     </span>Type<span class="w">           </span>Disp<span class="w"> </span>Enb<span class="w"> </span>Address<span class="w">            </span>What
+<span class="m">1</span><span class="w">       </span>breakpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">   </span>0x00007f1da010581d<span class="w"> </span><span class="k">in</span><span class="w"> </span>__pyx_f_17debugging_cython2_say_hello_from_cpdef<span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1194
+<span class="w">     </span>breakpoint<span class="w"> </span>already<span class="w"> </span>hit<span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="nb">times</span>
+<span class="m">2</span><span class="w">       </span>breakpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">   </span>0x00007f1da01058c6<span class="w"> </span><span class="k">in</span><span class="w"> </span>__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1227
+<span class="w">     </span>breakpoint<span class="w"> </span>already<span class="w"> </span>hit<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="nb">times</span>
+</pre></div>
+<p>If you didn't want the first breakpoint to be hit from Cython, you <tt class="docutils literal">delete 1</tt> or <tt class="docutils literal">disable 1</tt>.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>disable<span class="w"> </span><span class="m">1</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>run
+Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
+Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
+&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_cython2
+&gt;&gt;&gt;<span class="w"> </span>debugging_cython2.say_hello_from_cpdef<span class="o">()</span>
+
+Breakpoint<span class="w"> </span><span class="m">2</span>,<span class="w"> </span>__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="w"> </span><span class="o">(</span><span class="nv">__pyx_self</span><span class="o">=</span>&lt;module<span class="w"> </span>at<span class="w"> </span>remote<span class="w"> </span>0x7f8825188650&gt;,<span class="w"> </span><span class="nv">unused</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1227
+<span class="m">1227</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="m">1227</span><span class="w">      </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>cont
+Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>cpdef<span class="w"> </span><span class="k">function</span>
+&gt;&gt;&gt;<span class="w"> </span>debugging_cython2.say_hello_from_cpdef<span class="o">()</span>
+
+Breakpoint<span class="w"> </span><span class="m">2</span>,<span class="w"> </span>__pyx_pw_17debugging_cython2_1say_hello_from_cpdef<span class="w"> </span><span class="o">(</span><span class="nv">__pyx_self</span><span class="o">=</span>&lt;module<span class="w"> </span>at<span class="w"> </span>remote<span class="w"> </span>0x7f8825188650&gt;,<span class="w"> </span><span class="nv">unused</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_cython2.c:1227
+<span class="m">1227</span><span class="w">   </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="m">1227</span><span class="w">      </span>PyObject<span class="w"> </span>*__pyx_r<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>cy<span class="w"> </span>cont
+Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>cpdef<span class="w"> </span><span class="k">function</span>
+&gt;&gt;&gt;<span class="w"> </span>quit<span class="o">()</span>
+<span class="o">[</span>Inferior<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>process<span class="w"> </span><span class="m">105</span><span class="o">)</span><span class="w"> </span>exited<span class="w"> </span>normally<span class="o">]</span>
+</pre></div>
+</div>
+<div class="section" id="closing-thoughts">
+<h2 id="closing-thoughts">Closing Thoughts</h2>
+<p>If you've made it this far - congratulations! Debugging as we've done in this three part series is not going to be the flashiest thing you do as a developer. However, I can guarantee that working with these tools at such a level will give you a critical foundation with which you can build upon. Whether you are a Python developer looking to go <em>lower level</em> for performance reasons, or you are a C/C++ developer looking to go <em>higher level</em> to work with good abstractions, having these debuggers at your disposal will let you move up and down your computing stack with relative ease. Now go forth and have fun!</p>
+</div>
+
+    <!-- <div class="aspect-w-16 aspect-h-9 mx-auto"></div> CSS placeholder -->
+  </div>
+  <footer class="flex flex-col mt-10 ">
+    <ul class="flex flex-wrap">
+        <li
+          class="bg-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 mb-2 mr-2 px-3 py-1.5 rounded-md transition ease-in active:-translate-y-1 active:scale-110 duration-75">
+          <a href="http://127.0.0.1:8000/tag/cython.html">cython</a>
+        </li>
+        <li
+          class="bg-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 mb-2 mr-2 px-3 py-1.5 rounded-md transition ease-in active:-translate-y-1 active:scale-110 duration-75">
+          <a href="http://127.0.0.1:8000/tag/python.html">python</a>
+        </li>
+    </ul>
+    <div class="flex w-full my-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
+      <div class="w-1/2 rounded-l-lg"></div>
+      <div class="w-1/2 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-r-lg ">
+        <a class="flex flex-col" href="http://127.0.0.1:8000/fundamental-python-debugging-part-2-python-extensions.html">
+          <div class="text-right mx-4 py-2">
+            <p class="text-zinc-600 dark:text-zinc-300 text-sm">NEXT PAGE »</p>
+            <p class="text-right py-1 hover:underline">Fundamental Python Debugging Part 2 - Python Extensions</p>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="flex bg-zinc-200 dark:bg-zinc-700 py-2 rounded-lg justify-center space-x-2 text-xs">
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="twitter" aria-label="share Features on twitter"
+            href="https://twitter.com/intent/tweet/?text=Features&amp;url=http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-twitter fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="linkedin" aria-label="share Features on linkedin"
+            href="https://www.linkedin.com/sharing/share-offsite/?url=http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-linkedin fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="reddit" aria-label="share Features on reddit"
+            href="https://reddit.com/submit?url=http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-reddit fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="facebook" aria-label="share Features on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-facebook fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="whatsapp" aria-label="share Features on whatsapp"
+            href="https://api.whatsapp.com/send?text=Features - http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-whatsapp fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="telegram" aria-label="share Features on telegram"
+            href="https://telegram.me/share/url?text=Features&amp;url=http://127.0.0.1:8000/fundamental-python-debugging-part-3-cython-extensions.html">
+            <i class="fab fa-telegram fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+  <div>
+  </div>
+</main>
+
+    </div>
+    <footer class="flex w-full text-xs justify-center mt-10 mb-6 text-zinc-600 dark:text-zinc-400">
+        <div class="px-4">
+            <span>©2022&nbsp;&#8226;&nbsp;</span>Powered by
+            <a class="underline" href="https://getpelican.com/">Pelican</a>&nbsp;&
+            <a class="underline" href="https://github.com/aleylara/Papyrus">Papyrus</a>
+        </div>
+    </footer>
+
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1FZ91XSPCR"></script>
+
+    <script>
+        let themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        let themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+        let themeToggleBtn = document.getElementById('theme-toggle');
+        themeToggleBtn.addEventListener('click', function () {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            if (localStorage.getItem('color-theme')) {
+                if (localStorage.getItem('color-theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                }
+            } else {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

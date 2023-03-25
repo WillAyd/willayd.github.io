@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content="Pelican" />
+    <meta name="description" content="Will Ayd Blog Posts">
+    <title>Fundamental Python Debugging Part 1 - Python</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/theme/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="http://127.0.0.1:8000/theme/css/pygment.css" />
+    <link rel="shortcut icon" href="http://127.0.0.1:8000/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="http://127.0.0.1:8000/theme/css/stork.css">
+    <link rel="stylesheet" media="screen and (prefers-color-scheme: dark)"
+        href="http://127.0.0.1:8000/theme/css/stork-dark.css">
+    <link
+        href="http://127.0.0.1:8000/feeds/all.atom.xml"
+        type="application/atom+xml" rel="alternate" title="Will Ayd Atom Feed" />
+<meta name="description" content="This article shows you how to use pdb to debug your Python applications. While not the most visually appealing option, knowledge of pdb becomes..." />
+</head>
+
+<body class="min-h-screen flex flex-col max-w-7xl lg:max-w-none text-zinc-800 bg-neutral-100 
+    dark:bg-neutral-900 dark:text-zinc-300 container mx-auto justify-center md:px-3 ">
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
+    <nav class="sm:flex sm:justify-between xl:ml-32 pl-4 items-center">
+        <div class="flex pt-4">
+            <h1 class="font-semibold text-2xl"><a href="http://127.0.0.1:8000/">Will Ayd</a></h1>
+            <button id="theme-toggle" type="button" aria-label="Light|Dark"
+                class="text-zinc-700 dark:text-zinc-400 rounded-full focus:outline-none text-sm ml-2 p-1">
+                <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                </svg>
+                <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                        fill-rule="evenodd" clip-rule="evenodd"></path>
+                </svg>
+            </button>
+        </div>
+        <ul class="flex flex-wrap lg:mr-24 md:pt-0">
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/archives.html">Archive</a></li>
+            <li class="mr-4 pt-6"><a                     href="http://127.0.0.1:8000/categories.html">Categories</a></li>
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/tags.html">Tags</a></li>
+            <li class="mr-4 pt-6"><a  href="http://127.0.0.1:8000/search.html">Search</a></li>
+        </ul>
+    </nav>
+    <div class="flex-grow md:max-w-screen-md md:mx-auto md:w-3/4 px-4">
+        <nav class="text-zinc-800 dark:text-zinc-300 mt-12 pb-2 md:mt-16" aria-label="Breadcrumb">
+            <ul class="p-0 inline-flex items-center">
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/" class="text-zinc-800 dark:text-zinc-300 inline-flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path
+                                d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                            </path>
+                        </svg>
+                        Home
+                    </a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/categories.html">Categories</a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+                <li class="flex items-center">
+                    <a href="http://127.0.0.1:8000/category/debugging.html">debugging</a>
+                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
+                        <path
+                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
+                    </svg>
+                </li>
+            </ul>
+        </nav>
+
+<main>
+  <header>
+    <h1 class="font-semibold text-3xl my-2">Fundamental Python Debugging Part 1 - Python</h1>
+    <footer class="flex text-sm text-zinc-800 dark:text-zinc-400">
+      <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
+        <time>February 08, 2023</time>
+        <div>
+          <span>&nbsp;·&nbsp;27 min read</span>
+        </div>
+        <div>
+          <span>&nbsp;·&nbsp;Will Ayd</span>
+        </div>
+      </div>
+    </footer>
+  </header>
+  <details class="flex flex-col my-6 p-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg">
+    <summary class="text-lg font-bold">Table of contents</summary>
+    <div class="mx-4 px-4 underline">
+      <div id="toc"><ul><li><a class="toc-href" href="#setting-up-your-example" title="Setting up your example">Setting up your example</a></li><li><a class="toc-href" href="#part-1-debugging-exceptions" title="Part 1: Debugging exceptions">Part 1: Debugging exceptions</a></li><li><a class="toc-href" href="#part-2-debugging-logical-errors" title="Part 2: Debugging logical errors">Part 2: Debugging logical errors</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
+    </div>
+  </details>
+  <div class="max-w-7xl container mx-auto my-8 text-zinc-800 dark:text-zinc-300  
+              prose lg:max-w-none prose-headings:text-zinc-800 prose-headings:dark:text-zinc-300 
+              prose-h1:text-3xl lg:prose-h1:text-3xl prose-headings:font-semibold 
+              prose-pre:bg-zinc-200 prose-pre:text-zinc-800
+              dark:prose-pre:bg-zinc-800 dark:prose-pre:text-zinc-200
+              prose-blockquote:text-zinc-800
+              dark:prose-blockquote:text-zinc-200
+              prose-a:text-slate-600 prose-a:font-normal
+              dark:prose-a:text-slate-400
+              dark:prose-strong:text-zinc-200 
+              dark:prose-code:text-zinc-200
+              dark:prose-code:bg-zinc-800
+              prose-code:bg-zinc-200
+              prose-code:font-light
+              prose-img:rounded-md
+              sm:text-left md:text-justify
+              ">
+    <p>The topic of debugging Python is well-covered. Regardless of whether you want to use your IDE interactively or work from a console with <a class="reference external" href="https://docs.python.org/3/library/pdb.html">pdb</a>, chances are this is not the first article you have read on the topic.</p>
+<p>In spite of the wealth of content, I've found that most articles on debugging Python are singularly focused on <em>debugging Python</em>. That may not seem like such a bad thing at face value, but developing Python at an advanced level requires not only knowledge of the language itself, but also of lower level languages like C/C++. Being an expert in all of these languages at one time is near impossible, so knowing how to debug them effectively is critical.</p>
+<p>Luckily, when viewed through the proper lens, there is a lot of overlap in the debugging tooling for these languages. The built-in Python pdb debugger borrows much of its utility from <a class="reference external" href="https://sourceware.org/gdb/">gdb</a>, which will help you debug C/C++/Rust/Fortran, etc... gdb itself is extendable <a class="reference external" href="https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python">using Python</a>, and this extensibility is the reason why things like the <a class="reference external" href="https://cython.readthedocs.io/en/latest/src/userguide/debugging.html">Cython debugger</a> exist.</p>
+<p>Few if any other articles on debugging Python applications touch on these synchronicities. This and my next few blog posts attempt to highlight this for you and help you seamlessly transition across the aforementioned tools.</p>
+<div class="section" id="setting-up-your-example">
+<h2 id="setting-up-your-example">Setting up your example</h2>
+<p>Let's start with a buggy script. This code isn't <em>pythonic</em> and you may be able to troubleshoot without even using a debugger, but that isn't important for this exercise. Go ahead and save the below snippet as <tt class="docutils literal">buggy_program.py</tt>:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">buggy_loop</span><span class="p">():</span>
+    <span class="n">animals</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"dog"</span><span class="p">,</span> <span class="s2">"cat"</span><span class="p">,</span> <span class="s2">"turtle"</span><span class="p">]</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">animals</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"The animal at index </span><span class="si">{</span><span class="n">index</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">animals</span><span class="p">[</span><span class="n">index</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="n">buggy_loop</span><span class="p">()</span>
+</pre></div>
+<p>Executing this program with <tt class="docutils literal">python buggy_program.py</tt> should yield:</p>
+<div class="highlight"><pre><span></span>The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">    </span>buggy_loop<span class="o">()</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">6</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>buggy_loop
+<span class="w">    </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+IndexError:<span class="w"> </span>list<span class="w"> </span>index<span class="w"> </span>out<span class="w"> </span>of<span class="w"> </span>range
+</pre></div>
+</div>
+<div class="section" id="part-1-debugging-exceptions">
+<h2 id="part-1-debugging-exceptions">Part 1: Debugging exceptions</h2>
+<p>Changing our command from <tt class="docutils literal">python buggy_script.py</tt> to <tt class="docutils literal">python <span class="pre">-m</span> pdb buggy_script.py</tt> will launch pdb and load the script. pdb will not immediately execute anything, but instead wait for your input. We assume we don't know any commands yet, so typing <tt class="docutils literal">help</tt> is the best thing for us to start with</p>
+<div class="highlight"><pre><span></span>&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span>
+
+Documented<span class="w"> </span>commands<span class="w"> </span><span class="o">(</span><span class="nb">type</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span>&lt;topic&gt;<span class="o">)</span>:
+<span class="o">========================================</span>
+EOF<span class="w">    </span>c<span class="w">          </span>d<span class="w">        </span>h<span class="w">         </span>list<span class="w">      </span>q<span class="w">        </span>rv<span class="w">       </span>undisplay
+a<span class="w">      </span>cl<span class="w">         </span>debug<span class="w">    </span><span class="nb">help</span><span class="w">      </span>ll<span class="w">        </span>quit<span class="w">     </span>s<span class="w">        </span>unt
+<span class="nb">alias</span><span class="w">  </span>clear<span class="w">      </span>disable<span class="w">  </span>ignore<span class="w">    </span>longlist<span class="w">  </span>r<span class="w">        </span><span class="nb">source</span><span class="w">   </span><span class="k">until</span>
+args<span class="w">   </span>commands<span class="w">   </span>display<span class="w">  </span>interact<span class="w">  </span>n<span class="w">         </span>restart<span class="w">  </span>step<span class="w">     </span>up
+b<span class="w">      </span>condition<span class="w">  </span>down<span class="w">     </span>j<span class="w">         </span>next<span class="w">      </span><span class="k">return</span><span class="w">   </span>tbreak<span class="w">   </span>w
+<span class="nb">break</span><span class="w">  </span>cont<span class="w">       </span><span class="nb">enable</span><span class="w">   </span>jump<span class="w">      </span>p<span class="w">         </span>retval<span class="w">   </span>u<span class="w">        </span>whatis
+bt<span class="w">     </span><span class="k">continue</span><span class="w">   </span><span class="nb">exit</span><span class="w">     </span>l<span class="w">         </span>pp<span class="w">        </span>run<span class="w">      </span><span class="nb">unalias</span><span class="w">  </span>where
+
+Miscellaneous<span class="w"> </span><span class="nb">help</span><span class="w"> </span>topics:
+<span class="o">==========================</span>
+<span class="nb">exec</span><span class="w">  </span>pdb
+</pre></div>
+<p><tt class="docutils literal">help &lt;topic&gt;</tt> allows you to navigate any of the items listed above. We can even input <tt class="docutils literal">help help</tt> as a meta-command.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span><span class="nb">help</span>
+h<span class="o">(</span>elp<span class="o">)</span>
+<span class="w">        </span>Without<span class="w"> </span>argument,<span class="w"> </span>print<span class="w"> </span>the<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>available<span class="w"> </span>commands.
+<span class="w">        </span>With<span class="w"> </span>a<span class="w"> </span><span class="nb">command</span><span class="w"> </span>name<span class="w"> </span>as<span class="w"> </span>argument,<span class="w"> </span>print<span class="w"> </span><span class="nb">help</span><span class="w"> </span>about<span class="w"> </span>that<span class="w"> </span>command.
+<span class="w">        </span><span class="s2">"help pdb"</span><span class="w"> </span>shows<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span>pdb<span class="w"> </span>documentation.
+<span class="w">        </span><span class="s2">"help exec"</span><span class="w"> </span>gives<span class="w"> </span><span class="nb">help</span><span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>!<span class="w"> </span>command.
+</pre></div>
+<p>The <tt class="docutils literal">help</tt> we have input so far is a pdb command and not the built-in <tt class="docutils literal">help</tt> function that Python provides. If you wanted to execute the latter, you should prefix your input with <tt class="docutils literal">!</tt>:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>!help<span class="o">()</span>
+
+Welcome<span class="w"> </span>to<span class="w"> </span>Python<span class="w"> </span><span class="m">3</span>.8<span class="err">'</span>s<span class="w"> </span><span class="nb">help</span><span class="w"> </span>utility!
+
+If<span class="w"> </span>this<span class="w"> </span>is<span class="w"> </span>your<span class="w"> </span>first<span class="w"> </span><span class="nb">time</span><span class="w"> </span>using<span class="w"> </span>Python,<span class="w"> </span>you<span class="w"> </span>should<span class="w"> </span>definitely<span class="w"> </span>check<span class="w"> </span>out
+the<span class="w"> </span>tutorial<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>Internet<span class="w"> </span>at<span class="w"> </span>https://docs.python.org/3.8/tutorial/.
+
+Enter<span class="w"> </span>the<span class="w"> </span>name<span class="w"> </span>of<span class="w"> </span>any<span class="w"> </span>module,<span class="w"> </span>keyword,<span class="w"> </span>or<span class="w"> </span>topic<span class="w"> </span>to<span class="w"> </span>get<span class="w"> </span><span class="nb">help</span><span class="w"> </span>on<span class="w"> </span>writing
+Python<span class="w"> </span>programs<span class="w"> </span>and<span class="w"> </span>using<span class="w"> </span>Python<span class="w"> </span>modules.<span class="w">  </span>To<span class="w"> </span>quit<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>utility<span class="w"> </span>and
+<span class="k">return</span><span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>interpreter,<span class="w"> </span>just<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s2">"quit"</span>.
+
+To<span class="w"> </span>get<span class="w"> </span>a<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>available<span class="w"> </span>modules,<span class="w"> </span>keywords,<span class="w"> </span>symbols,<span class="w"> </span>or<span class="w"> </span>topics,<span class="w"> </span><span class="nb">type</span>
+<span class="s2">"modules"</span>,<span class="w"> </span><span class="s2">"keywords"</span>,<span class="w"> </span><span class="s2">"symbols"</span>,<span class="w"> </span>or<span class="w"> </span><span class="s2">"topics"</span>.<span class="w">  </span>Each<span class="w"> </span>module<span class="w"> </span>also<span class="w"> </span>comes
+with<span class="w"> </span>a<span class="w"> </span>one-line<span class="w"> </span>summary<span class="w"> </span>of<span class="w"> </span>what<span class="w"> </span>it<span class="w"> </span>does<span class="p">;</span><span class="w"> </span>to<span class="w"> </span>list<span class="w"> </span>the<span class="w"> </span>modules<span class="w"> </span>whose<span class="w"> </span>name
+or<span class="w"> </span>summary<span class="w"> </span>contain<span class="w"> </span>a<span class="w"> </span>given<span class="w"> </span>string<span class="w"> </span>such<span class="w"> </span>as<span class="w"> </span><span class="s2">"spam"</span>,<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s2">"modules spam"</span>.
+</pre></div>
+<p>If you executed the above <tt class="docutils literal">!help()</tt> command be sure to input <tt class="docutils literal">q</tt> and hit enter to quit the Python interactive help.</p>
+<p>To actually get code executing we want to <tt class="docutils literal">continue</tt>. <tt class="docutils literal">help continue</tt> shows us more about this command.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span>c
+c<span class="o">(</span>ont<span class="o">(</span>inue<span class="o">))</span>
+<span class="w">        </span>Continue<span class="w"> </span>execution,<span class="w"> </span>only<span class="w"> </span>stop<span class="w"> </span>when<span class="w"> </span>a<span class="w"> </span>breakpoint<span class="w"> </span>is<span class="w"> </span>encountered.
+</pre></div>
+<p>So <tt class="docutils literal">c</tt>, <tt class="docutils literal">cont</tt>, and <tt class="docutils literal">continue</tt> would all do the same things for us. For now input <tt class="docutils literal">c</tt> and press enter:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/pdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1726</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>main
+<span class="w">    </span>pdb._runscript<span class="o">(</span>mainpyfile<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/pdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1586</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>_runscript
+<span class="w">    </span>self.run<span class="o">(</span>statement<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/bdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">597</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>run
+<span class="w">    </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;string&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/home/willayd/buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">    </span>buggy_loop<span class="o">()</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/home/willayd/buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">6</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>buggy_loop
+<span class="w">    </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+IndexError:<span class="w"> </span>list<span class="w"> </span>index<span class="w"> </span>out<span class="w"> </span>of<span class="w"> </span>range
+Uncaught<span class="w"> </span>exception.<span class="w"> </span>Entering<span class="w"> </span>post<span class="w"> </span>mortem<span class="w"> </span>debugging
+Running<span class="w"> </span><span class="s1">'cont'</span><span class="w"> </span>or<span class="w"> </span><span class="s1">'step'</span><span class="w"> </span>will<span class="w"> </span>restart<span class="w"> </span>the<span class="w"> </span>program
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">6</span><span class="o">)</span>buggy_loop<span class="o">()</span>
+-&gt;<span class="w"> </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<span class="o">(</span>pdb<span class="o">)</span>
+</pre></div>
+<p>The program has executed and printed the same traceback we saw without using pdb. However, since we are running our script under pdb execution halts after an error occurs and allows us to inspect the state of the program.</p>
+<p><tt class="docutils literal">l</tt> (short for list) shows us where the execution halted (see <cite>-&gt;</cite> below) and a few lines around that.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
+<span class="w">  </span><span class="m">1</span><span class="w">          </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="w">  </span><span class="m">2</span><span class="w">              </span><span class="nv">animals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="s2">"dog"</span>,<span class="w"> </span><span class="s2">"cat"</span>,<span class="w"> </span><span class="s2">"turtle"</span><span class="o">]</span>
+<span class="w">  </span><span class="m">3</span><span class="w">              </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="m">4</span>
+<span class="w">  </span><span class="m">5</span><span class="w">              </span><span class="k">while</span><span class="w"> </span>index<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>len<span class="o">(</span>animals<span class="o">)</span>:
+<span class="w">  </span><span class="m">6</span><span class="w">  </span>-&gt;<span class="w">              </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<span class="w">  </span><span class="m">7</span><span class="w">                  </span><span class="nv">index</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="m">1</span>
+<span class="w">  </span><span class="m">8</span>
+<span class="w">  </span><span class="m">9</span><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="nv">__name__</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"__main__"</span>:
+<span class="w"> </span><span class="m">10</span><span class="w">              </span>buggy_loop<span class="o">()</span>
+<span class="o">[</span>EOF<span class="o">]</span>
+</pre></div>
+<p>Typing <tt class="docutils literal">l</tt> again interestingly does not give us the same result:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
+<span class="o">[</span>EOF<span class="o">]</span>
+</pre></div>
+<p><tt class="docutils literal">list</tt> automatically iterates through the code every time the command is entered, and because our script is small we just reach the end-of-file. To continually display where execution halted you can enter <tt class="docutils literal">l .</tt>.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l<span class="w"> </span>.
+<span class="w">  </span><span class="m">1</span><span class="w">          </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="w">  </span><span class="m">2</span><span class="w">              </span><span class="nv">animals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="s2">"dog"</span>,<span class="w"> </span><span class="s2">"cat"</span>,<span class="w"> </span><span class="s2">"turtle"</span><span class="o">]</span>
+<span class="w">  </span><span class="m">3</span><span class="w">              </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="m">4</span>
+<span class="w">  </span><span class="m">5</span><span class="w">              </span><span class="k">while</span><span class="w"> </span>index<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>len<span class="o">(</span>animals<span class="o">)</span>:
+<span class="w">  </span><span class="m">6</span><span class="w">  </span>-&gt;<span class="w">              </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<span class="w">  </span><span class="m">7</span><span class="w">                  </span><span class="nv">index</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="m">1</span>
+<span class="w">  </span><span class="m">8</span>
+<span class="w">  </span><span class="m">9</span><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="nv">__name__</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"__main__"</span>:
+<span class="w"> </span><span class="m">10</span><span class="w">              </span>buggy_loop<span class="o">()</span>
+<span class="o">[</span>EOF<span class="o">]</span>
+</pre></div>
+<p>Another nice feature of pdb is that you can enter expressions see the result printed back. For instance, we know we have a variable named <tt class="docutils literal">index</tt> in the function we are debugging, so entering that into pdb will print the value of index.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>index
+<span class="m">3</span>
+</pre></div>
+<p>If you are debugging a longer function with a lot of variables, you may also be interested in the <tt class="docutils literal">dir()</tt> or <tt class="docutils literal">locals()</tt> functions. The former shows the names of all variables in the current scope; the latter gives you the names and values.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>dir<span class="o">()</span>
+<span class="o">[</span><span class="s1">'animals'</span>,<span class="w"> </span><span class="s1">'index'</span><span class="o">]</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'animals'</span>:<span class="w"> </span><span class="o">[</span><span class="s1">'dog'</span>,<span class="w"> </span><span class="s1">'cat'</span>,<span class="w"> </span><span class="s1">'turtle'</span><span class="o">]</span>,<span class="w"> </span><span class="s1">'index'</span>:<span class="w"> </span><span class="m">3</span><span class="o">}</span>
+</pre></div>
+<p>Let us step back now and talk about the problem we are trying to solve. The traceback tells us we have an <tt class="docutils literal">IndexError: list index out of range</tt> on line 6, and the debugger paused us at that same line. Upon inspecting the <tt class="docutils literal">index</tt> variable in the debugger we note it has a value of 3.</p>
+<p>Line 6 attempts to do <tt class="docutils literal">animals[index]</tt>, which fails because Python is a 0-based index language. One fix is for us to change line 5 from</p>
+<div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">index</span> <span class="o">&lt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">animals</span><span class="p">):</span>
+</pre></div>
+<p>to</p>
+<div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">animals</span><span class="p">):</span>
+</pre></div>
+<p>If you make that change to the source code you can enter <tt class="docutils literal">restart</tt> into pdb to start over with the updated script logic. From there input <tt class="docutils literal">c</tt> and you will note the script executes without issue.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_program.py<span class="w"> </span>with<span class="w"> </span>arguments:
+
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+Post<span class="w"> </span>mortem<span class="w"> </span>debugger<span class="w"> </span>finished.<span class="w"> </span>The<span class="w"> </span>/home/willayd/buggy_program.py<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+The<span class="w"> </span>program<span class="w"> </span>finished<span class="w"> </span>and<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+</pre></div>
+<p>Since things are good to go now, you can type <tt class="docutils literal">quit()</tt> into the debugger to close things out.</p>
+</div>
+<div class="section" id="part-2-debugging-logical-errors">
+<h2 id="part-2-debugging-logical-errors">Part 2: Debugging logical errors</h2>
+<p>Getting an exception in Python is a clear indicator that things are wrong, but not every bug shows up as an error. The code below is inspired by pandas bug [#49861](<a class="reference external" href="https://github.com/pandas-dev/pandas/issues/49861">https://github.com/pandas-dev/pandas/issues/49861</a>). The code as originally written used a recursive function call that was roughly equivalent to:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">normalize_json</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">key_string</span><span class="p">,</span>
+    <span class="n">normalized_dict</span><span class="p">,</span>
+    <span class="n">separator</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_string</span><span class="si">}{</span><span class="n">separator</span><span class="si">}{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">normalize_json</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                <span class="c1"># to avoid adding the separator to the start of every key</span>
+                <span class="n">key_string</span><span class="o">=</span><span class="n">new_key</span>
+                <span class="k">if</span> <span class="n">new_key</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">separator</span>
+                <span class="k">else</span> <span class="n">new_key</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span> <span class="p">:],</span>
+                <span class="n">normalized_dict</span><span class="o">=</span><span class="n">normalized_dict</span><span class="p">,</span>
+                <span class="n">separator</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">normalized_dict</span><span class="p">[</span><span class="n">key_string</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">normalized_dict</span>
+</pre></div>
+<p>This function aims to take the keys of deeply nested dictionaries and combine them into one key with a separator. Note below how hierarchies like <tt class="docutils literal">a <span class="pre">-&gt;</span> b <span class="pre">-&gt;</span> c</tt> get folded into one <tt class="docutils literal">a.b.c</tt> key.</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">normalize_json</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"."</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">'a.b'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">normalize_json</span><span class="p">({</span><span class="s2">"a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"c"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"."</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">'a.b.c'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+</pre></div>
+<p>The OP of the pandas issue noticed that the function would incorrectly remove the start of the string at the top of the dictionary hierarchy _if_ that key began with the <tt class="docutils literal">separator</tt> argument. For instance, if you had a key at the top of the dictionary that began with an underscore and you used an underscore separator, the very first key would get mangled. This is visible below as the normalized key is shown as <tt class="docutils literal">a_b</tt> when it should be <tt class="docutils literal">_a_b</tt>.</p>
+<div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">normalize_json</span><span class="p">({</span><span class="s2">"_a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"_"</span><span class="p">)</span>
+<span class="p">{</span><span class="s1">'a_b'</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}</span>
+</pre></div>
+<p>To diagnose, go ahead and save the following code as <tt class="docutils literal">buggy_script2.py</tt>:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">normalize_json</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">key_string</span><span class="p">,</span>
+    <span class="n">normalized_dict</span><span class="p">,</span>
+    <span class="n">separator</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_string</span><span class="si">}{</span><span class="n">separator</span><span class="si">}{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">normalize_json</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                <span class="c1"># to avoid adding the separator to the start of every key</span>
+                <span class="n">key_string</span><span class="o">=</span><span class="n">new_key</span>
+                <span class="k">if</span> <span class="n">new_key</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">separator</span>
+                <span class="k">else</span> <span class="n">new_key</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">separator</span><span class="p">)</span> <span class="p">:],</span>
+                <span class="n">normalized_dict</span><span class="o">=</span><span class="n">normalized_dict</span><span class="p">,</span>
+                <span class="n">separator</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">normalized_dict</span><span class="p">[</span><span class="n">key_string</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">normalized_dict</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">normalize_json</span><span class="p">({</span><span class="s2">"_a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"_"</span><span class="p">))</span>
+</pre></div>
+<p>We can start the debugger and load the script using <tt class="docutils literal">python <span class="pre">-m</span> pdb buggy_script2.py</tt>. However, since there is no bug this time the code will not stop unless we explicitly set a <em>breakpoint</em>. <tt class="docutils literal">help break</tt> gives you some ideas on how to do this; for now start with <tt class="docutils literal">break normalize_json</tt></p>
+<div class="highlight"><pre><span></span>&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json
+Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span>
+Num<span class="w"> </span>Type<span class="w">         </span>Disp<span class="w"> </span>Enb<span class="w">   </span>Where
+<span class="m">1</span><span class="w">   </span>breakpoint<span class="w">   </span>keep<span class="w"> </span>yes<span class="w">   </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+</pre></div>
+<p>Continue along by hitting <tt class="docutils literal">c</tt> then <tt class="docutils literal">l</tt> to list where execution paused, and you will see it is the first line of the <tt class="docutils literal">normalize_json</tt> function</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
+<span class="w">  </span><span class="m">2</span><span class="w">              </span>data,
+<span class="w">  </span><span class="m">3</span><span class="w">              </span>key_string,
+<span class="w">  </span><span class="m">4</span><span class="w">              </span>normalized_dict,
+<span class="w">  </span><span class="m">5</span><span class="w">              </span>separator
+<span class="w">  </span><span class="m">6</span><span class="w">          </span><span class="o">)</span>:
+<span class="w">  </span><span class="m">7</span><span class="w">  </span>-&gt;<span class="w">          </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="w">  </span><span class="m">8</span><span class="w">                  </span><span class="k">for</span><span class="w"> </span>key,<span class="w"> </span>value<span class="w"> </span><span class="k">in</span><span class="w"> </span>data.items<span class="o">()</span>:
+<span class="w">  </span><span class="m">9</span><span class="w">                      </span><span class="nv">new_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f<span class="s2">"{key_string}{separator}{key}"</span>
+<span class="w"> </span><span class="m">10</span><span class="w">                      </span>normalize_json<span class="o">(</span>
+<span class="w"> </span><span class="m">11</span><span class="w">                          </span><span class="nv">data</span><span class="o">=</span>value,
+<span class="w"> </span><span class="m">12</span><span class="w">                          </span><span class="c1"># to avoid adding the separator to the start of every key</span>
+</pre></div>
+<p>Another command worth introducing here is <tt class="docutils literal">backtrace</tt>, or <tt class="docutils literal">bt</tt> for short. Python functions operate as a [call stack](<a class="reference external" href="https://en.wikipedia.org/wiki/Call_stack">https://en.wikipedia.org/wiki/Call_stack</a>), so backtrace tells you the sequence of calls that lead up to the breakpoint.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">)</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+</pre></div>
+<p>Within pdb the most recent call appears on the bottom (other debuggers may reverse this), so reading from the bottom up we are at <tt class="docutils literal">normalize_json</tt> line 7 which was called by our <tt class="docutils literal">buggy_script2.py</tt> script on line 25. The calls preceding that are internal to Python. Hit <tt class="docutils literal">c</tt> again and another <tt class="docutils literal">bt</tt> to see what happens next:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">)</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+</pre></div>
+<p>We are in a recursive function call, so we see that <tt class="docutils literal">normalize_json</tt> is at the bottom of our backtrace twice. This pattern would continue every time we continue script execution.</p>
+<p>pdb let's you move up and down the stack trace. We know we are 2 <tt class="docutils literal">normalize_json</tt> calls deep. The <tt class="docutils literal">up</tt> and <tt class="docutils literal">down</tt> commands not surprisingly move up and down the call stack trace, giving you the power to inspect each <em>frame</em>.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>up
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'_a'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">''</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span>,<span class="w"> </span><span class="s1">'key'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'value'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'new_key'</span>:<span class="w"> </span><span class="s1">'__a'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>down
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+</pre></div>
+<p>The first time we called <tt class="docutils literal">locals()</tt> we were at the most recent <tt class="docutils literal">normalize_json</tt> call. The <tt class="docutils literal">up</tt> command moved us back one frame; <tt class="docutils literal">down</tt> takes us back to the current frame.</p>
+<p>Since our input data isn't too deeply nested, we could keep continuing and moving up and down the stack to try and find where the issue appears, but this could be impractical with many layers of recursion. Fortunately we can be more intelligent with where and when we choose to pause code execution.</p>
+<p>To do that let's <tt class="docutils literal">restart</tt> our code execution and <tt class="docutils literal">clear</tt> our existing breakpoint(s).</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_script2.py<span class="w"> </span>with<span class="w"> </span>arguments:
+
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+</pre></div>
+<p>If you inspected the <tt class="docutils literal">help break</tt> output earlier, you might have noticed that <tt class="docutils literal">break</tt> takes an optional condition argument. This is an expression that must evaluate to <tt class="docutils literal">True</tt> for the breakpoint to pause execution.</p>
+<p>We know from our bug report and from inspecting some of the <tt class="docutils literal">locals()</tt> outputs earlier that the bug likely happens when a variable named <tt class="docutils literal">key_string</tt> has the value of <tt class="docutils literal">a_b</tt>, so we can pause execution <em>only</em> when that condition is met.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json,<span class="w"> </span><span class="nv">key_string</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"a_b"</span>
+Breakpoint<span class="w"> </span><span class="m">2</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>print<span class="o">(</span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">))</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+</pre></div>
+<p>The above backtrace shows us pausing code execution within the third call of <tt class="docutils literal">normalize_json</tt>. Even though our breakpoint was on the <tt class="docutils literal">normalize_json</tt> function, the expression <tt class="docutils literal">key_string == "a_b"</tt> did not evaluate to true for the first two function calls.</p>
+<p>Where our execution paused <tt class="docutils literal">key_string</tt> is not modified locally, but rather received as an argument. This means the bug may surface up one call in the backtrace, so move up and inspect the code:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>u
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>ll
+<span class="w">  </span><span class="m">1</span><span class="w"> </span>B<span class="w">        </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="w">  </span><span class="m">2</span><span class="w">              </span>data,
+<span class="w">  </span><span class="m">3</span><span class="w">              </span>key_string,
+<span class="w">  </span><span class="m">4</span><span class="w">              </span>normalized_dict,
+<span class="w">  </span><span class="m">5</span><span class="w">              </span>separator
+<span class="w">  </span><span class="m">6</span><span class="w">          </span><span class="o">)</span>:
+<span class="w">  </span><span class="m">7</span><span class="w">              </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="w">  </span><span class="m">8</span><span class="w">                  </span><span class="k">for</span><span class="w"> </span>key,<span class="w"> </span>value<span class="w"> </span><span class="k">in</span><span class="w"> </span>data.items<span class="o">()</span>:
+<span class="w">  </span><span class="m">9</span><span class="w">                      </span><span class="nv">new_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f<span class="s2">"{key_string}{separator}{key}"</span>
+<span class="w"> </span><span class="m">10</span><span class="w">  </span>-&gt;<span class="w">                  </span>normalize_json<span class="o">(</span>
+<span class="w"> </span><span class="m">11</span><span class="w">                          </span><span class="nv">data</span><span class="o">=</span>value,
+<span class="w"> </span><span class="m">12</span><span class="w">                          </span><span class="c1"># to avoid adding the separator to the start of every key</span>
+<span class="w"> </span><span class="m">13</span><span class="w">                          </span><span class="nv">key_string</span><span class="o">=</span>new_key
+<span class="w"> </span><span class="m">14</span><span class="w">                          </span><span class="k">if</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="m">1</span><span class="o">]</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span>separator
+<span class="w"> </span><span class="m">15</span><span class="w">                          </span><span class="k">else</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>:<span class="o">]</span>,
+<span class="w"> </span><span class="m">16</span><span class="w">                          </span><span class="nv">normalized_dict</span><span class="o">=</span>normalized_dict,
+<span class="w"> </span><span class="m">17</span><span class="w">                          </span><span class="nv">separator</span><span class="o">=</span>separator,
+<span class="w"> </span><span class="m">18</span><span class="w">                      </span><span class="o">)</span>
+<span class="w"> </span><span class="m">19</span><span class="w">              </span><span class="k">else</span>:
+<span class="w"> </span><span class="m">20</span><span class="w">                  </span>normalized_dict<span class="o">[</span>key_string<span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>data
+<span class="w"> </span><span class="m">21</span><span class="w">              </span><span class="k">return</span><span class="w"> </span>normalized_dict
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key
+<span class="s1">'_a_b'</span>
+</pre></div>
+<p>Our code execution paused on line 10. On line 9 <tt class="docutils literal">new_key</tt> was assigned a value of <tt class="docutils literal">_a_b</tt>, which is what we want to see in the end result.</p>
+<p>Look closely at line 13 however and you will note that we aren't just forwarding <tt class="docutils literal">new_key</tt> as an argument to the next <tt class="docutils literal">normalize_json</tt> call. Instead we have an <tt class="docutils literal"><span class="pre">if...else</span></tt> statement that determines which gets forwarded along.  We can evaluate both branches of the conditional to get an idea of what is going on:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="m">1</span><span class="o">]</span>
+<span class="s1">'_'</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span>:<span class="o">]</span>
+<span class="s1">'a_b'</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key
+<span class="s1">'_a_b'</span>
+</pre></div>
+<p>Our first instinct might be to simplify the function call and make the argument <tt class="docutils literal">key_string=new_key</tt>, making our buggy_script2.py script now look like:</p>
+<div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">normalize_json</span><span class="p">(</span>
+    <span class="n">data</span><span class="p">,</span>
+    <span class="n">key_string</span><span class="p">,</span>
+    <span class="n">normalized_dict</span><span class="p">,</span>
+    <span class="n">separator</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">new_key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">key_string</span><span class="si">}{</span><span class="n">separator</span><span class="si">}{</span><span class="n">key</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">normalize_json</span><span class="p">(</span>
+                <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">,</span>
+                <span class="c1"># to avoid adding the separator to the start of every key</span>
+                <span class="n">key_string</span><span class="o">=</span><span class="n">new_key</span><span class="p">,</span>
+                <span class="n">normalized_dict</span><span class="o">=</span><span class="n">normalized_dict</span><span class="p">,</span>
+                <span class="n">separator</span><span class="o">=</span><span class="n">separator</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">normalized_dict</span><span class="p">[</span><span class="n">key_string</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="k">return</span> <span class="n">normalized_dict</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">normalize_json</span><span class="p">({</span><span class="s2">"_a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"_"</span><span class="p">))</span>
+</pre></div>
+<p>This reads nicer, but we have fixed one thing by breaking another. Doing a <tt class="docutils literal">restart</tt> and <tt class="docutils literal">continue</tt> in no longer hits our breakpoint, but the script now prints out <tt class="docutils literal">{'__a_b': [1, 2, 3]}</tt>. We want <tt class="docutils literal">_a_b</tt> as the key not <tt class="docutils literal">__a_b</tt>.</p>
+<p>So back to the drawing board...in pdb input <tt class="docutils literal">restart</tt> and <tt class="docutils literal">clear</tt> to remove the breakpoint we set so far. Enter <tt class="docutils literal">break normalize_json</tt> so we can stop again during every function call.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">2</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json
+Breakpoint<span class="w"> </span><span class="m">3</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span>
+</pre></div>
+<p>Now step through a few function calls, inspect locals and see what might be happening:</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'_a'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">''</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'__a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'__a_b'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span>
+</pre></div>
+<p>If you look closely, you will notice that the <tt class="docutils literal">key_string</tt> variable is already wrong on the second call to the <tt class="docutils literal">normalize_json</tt> function. But the pattern of joining that key with one separator appears correct in the call thereafter.</p>
+<p>A simplistic solution is to have some mechanism within our <tt class="docutils literal">normalize_json</tt> call to know if it is the first time the function is being called or not, and special-case the handling of the first call. Inspecting <tt class="docutils literal">locals()</tt> across the different function calls, we notice in the first call that <tt class="docutils literal">key_string</tt> is an empty string but has a value in all subsequent calls. Knowing this we can set up a condition to only strip leading separators if we are NOT in the first function call.</p>
+<div class="highlight"><pre><span></span>            normalize_json(
+                data=value,
+                # to avoid adding the separator to the start of every key
+                key_string=new_key,
+                normalized_dict=normalized_dict,
+                separator=separator,
+            )
+    else:
+        normalized_dict[key_string] = data
+    return normalized_dict
+
+
+if __name__ == "__main__":
+    print(normalize_json({"_a": {"b": [1, 2, 3]}}, "", {}, "_"))
+</pre></div>
+<p>To verify this now works, <tt class="docutils literal">restart</tt> the program, <tt class="docutils literal">clear</tt> any breakpoint(s) and <tt class="docutils literal">continue</tt> to let things run. You should now get the right answer.</p>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_script2.py<span class="w"> </span>with<span class="w"> </span>arguments:
+
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">3</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+<span class="o">{</span><span class="s1">'_a_b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>
+The<span class="w"> </span>program<span class="w"> </span>finished<span class="w"> </span>and<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
+</pre></div>
+</div>
+<div class="section" id="closing-thoughts">
+<h2 id="closing-thoughts">Closing Thoughts</h2>
+<p>If you have made it this far congratulations! With modern visual debuggers integrated into IDEs, the way of debugging illustrated above may not be the most commonplace. However, through liberal use of the <tt class="docutils literal">help</tt> command you may find that <tt class="docutils literal">pdb</tt> has many features that are not implemented or obvious to use in higher level debuggers. Barring some differences, you'll also find that this method of using <tt class="docutils literal">pdb</tt> translates well into using <tt class="docutils literal">gdb</tt> and extensions like the Cython debugger, which will be represented in future blog posts.</p>
+</div>
+
+    <!-- <div class="aspect-w-16 aspect-h-9 mx-auto"></div> CSS placeholder -->
+  </div>
+  <footer class="flex flex-col mt-10 ">
+    <ul class="flex flex-wrap">
+        <li
+          class="bg-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 mb-2 mr-2 px-3 py-1.5 rounded-md transition ease-in active:-translate-y-1 active:scale-110 duration-75">
+          <a href="http://127.0.0.1:8000/tag/python.html">python</a>
+        </li>
+    </ul>
+    <div class="flex w-full my-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
+      <div class="w-1/2 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-l-lg">
+        <a class="flex flex-col pr-2" href="http://127.0.0.1:8000/fundamental-python-debugging-part-2-python-extensions.html">
+          <div class="mx-4 py-2 text-left">
+            <p class="text-zinc-600 dark:text-zinc-300 text-sm">« PREV PAGE</p>
+            <p class="text-left py-1 hover:underline">Fundamental Python Debugging Part 2 - Python Extensions</p>
+          </div>
+        </a>
+      </div>
+    </div>
+    <div class="flex bg-zinc-200 dark:bg-zinc-700 py-2 rounded-lg justify-center space-x-2 text-xs">
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="twitter" aria-label="share Features on twitter"
+            href="https://twitter.com/intent/tweet/?text=Features&amp;url=http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-twitter fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="linkedin" aria-label="share Features on linkedin"
+            href="https://www.linkedin.com/sharing/share-offsite/?url=http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-linkedin fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="reddit" aria-label="share Features on reddit"
+            href="https://reddit.com/submit?url=http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-reddit fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="facebook" aria-label="share Features on facebook"
+            href="https://facebook.com/sharer/sharer.php?u=http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-facebook fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="whatsapp" aria-label="share Features on whatsapp"
+            href="https://api.whatsapp.com/send?text=Features - http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-whatsapp fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+      <ul>
+        <li class="bg-gray-900 p-1 text-white rounded-md">
+          <a target="_blank" rel="noopener noreferrer" title="telegram" aria-label="share Features on telegram"
+            href="https://telegram.me/share/url?text=Features&amp;url=http://127.0.0.1:8000/fundamental-python-debugging-part-1-python.html">
+            <i class="fab fa-telegram fa-2x" aria-hidden="true"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </footer>
+  <div>
+  </div>
+</main>
+
+    </div>
+    <footer class="flex w-full text-xs justify-center mt-10 mb-6 text-zinc-600 dark:text-zinc-400">
+        <div class="px-4">
+            <span>©2022&nbsp;&#8226;&nbsp;</span>Powered by
+            <a class="underline" href="https://getpelican.com/">Pelican</a>&nbsp;&
+            <a class="underline" href="https://github.com/aleylara/Papyrus">Papyrus</a>
+        </div>
+    </footer>
+
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1FZ91XSPCR"></script>
+
+    <script>
+        let themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        let themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
+                '(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+        let themeToggleBtn = document.getElementById('theme-toggle');
+        themeToggleBtn.addEventListener('click', function () {
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            if (localStorage.getItem('color-theme')) {
+                if (localStorage.getItem('color-theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                }
+            } else {
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

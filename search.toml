@@ -1,0 +1,18 @@
+[input]
+base_directory = "/home/willayd/clones/willayd-pelican/output"
+html_selector = "main"
+
+[[input.files]]
+path = "fundamental-python-debugging-part-3-cython-extensions.html"
+url = "/fundamental-python-debugging-part-3-cython-extensions.html"
+title = "Fundamental Python Debugging Part 3 - Cython Extensions"
+
+[[input.files]]
+path = "fundamental-python-debugging-part-2-python-extensions.html"
+url = "/fundamental-python-debugging-part-2-python-extensions.html"
+title = "Fundamental Python Debugging Part 2 - Python Extensions"
+
+[[input.files]]
+path = "fundamental-python-debugging-part-1-python.html"
+url = "/fundamental-python-debugging-part-1-python.html"
+title = "Fundamental Python Debugging Part 1 - Python"
