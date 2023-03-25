@@ -1,7 +1,7 @@
 AUTHOR = 'Will Ayd'
 SITENAME = 'Will Ayd'
 SITEURL = 'http://127.0.0.1:8000'
-TIMEZONE = 'America/Los_Angeles'
+TIMEZONE = 'US/Pacific'
 DEFAULT_LANG = 'en'
 
 SUBTITLE = 'Will Ayd'
@@ -19,6 +19,7 @@ COPYRIGHT = '©2022'
 PATH = 'content'
 THEME = 'themes/Papyrus'
 THEME_STATIC_PATHS = ['static']
+THEME_TEMPLATES_OVERRIDES = ['template_overrides/Papyrus/templates']
 PLUGIN_PATHS = ['pelican-plugins']
 PLUGINS = ['readtime', 'search', 'neighbors', 'pelican-toc']
 STATIC_PATHS = [
@@ -77,5 +78,5 @@ DEFAULT_PAGINATION = 8
 #RELATIVE_URLS = True
 
 # DISQUS_SITENAME = ''
-# GOOGLE_ANALYTICS = ''
+GOOGLE_ANALYTICS = 'G-1FZ91XSPCR'
 
