@@ -1,6 +1,5 @@
 pre-commit
-pelican
-pelican-search
-pelican-neighbors
-pelican-readtime
-spelling
+pelican==4.8.0
+pelican-search==1.0.2
+pelican-neighbors==1.2.0
+pelican-readtime==0.2.0
