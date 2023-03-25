@@ -1,0 +1,3 @@
+[submodule "themes/Papyrus"]
+	path = themes/Papyrus
+	url = https://github.com/aleylara/Papyrus.git
