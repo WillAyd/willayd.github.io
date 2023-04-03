@@ -8,31 +8,34 @@ Profiling Python Extensions with callgrind
 :author: Will Ayd
 :summary: It is common practice in the Python world to write C/C++ extensions as a means for optimizing performance. But how can you find bottlenecks then in your C/C++ extensions? Use callgrind of course!
 
-At some point in the development of a high performance Python library, you will likely find yourself writing C/C++ extensions (whether by hand or via `Cython <https://cython.org/>`_. Often that alone may achieve the performance you want, but in cases where you _still_ need more what do you do? The Python runtime won't be able to track the performance details of any lower-level extensions, so many of the great tools used for Python profiling are out of the question. Instead we need to opt for profiling tools that directly target C/C++ executables.
+At some point in the development of a high performance Python library, you will likely find yourself writing C/C++ extensions (whether by hand or via `Cython <https://cython.org/>`_). That alone may achieve the performance you desire, but in cases where you *still* need more what do you do? The Python runtime won't be able to track the performance details of any lower-level extensions, so many of the great tools used for Python profiling are out of the question. Instead we need to opt for profiling tools that directly target C/C++ executables.
 
-There are many tools to help with this, but for this article we are going to use `callgrind <https://valgrind.org/docs/manual/cl-manual.html>`_, which is part of the larger `Valgrind <https://valgrind.org/>`_ framework. We will perform this analysis using a real-world example with the `pandas <https://pandas.pydata.org/>`_ library, where we are curious to know which parts of the pandas `read_csv <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_ implementation may be a bottleneck on larger datasets.
+There are many tools to help with this, but for this article we are going to use `callgrind <https://valgrind.org/docs/manual/cl-manual.html>`_, which is part of the larger `Valgrind <https://valgrind.org/>`_ framework. As a profiling target we are going to pick the 1.5 release of the `pandas <https://pandas.pydata.org/>`_ library, where we are curious to know which parts of the `read_csv <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html>`_ implementation may be a bottleneck.
 
 Setting up our environment / data
 ---------------------------------
 
-To make things easy I have created a Dockerfile tailor-built for this article. You can pull it down via ``docker pull willayd/blog-posts:pandas-callgrind``. If you care not to use Docker, you are we welcome to install the components from scratch. You will need to `install Valgrind <https://valgrind.org/docs/manual/manual-core.html#manual-core.install>`_ alongside all of the pandas build requirements `from the 1.5.x release <https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html>`_.
+To simplify the setup I have created a Dockerfile custom-built for this article, which you can pull via ``docker pull willayd/blog-posts:pandas-callgrind``. If not using Docker you will need to `install Valgrind <https://valgrind.org/docs/manual/manual-core.html#manual-core.install>`_ alongside all of the pandas build requirements `from the 1.5.x release <https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html>`_.
 
-Let's also get a copy of the pandas 1.5 release locally. This article assumes we clone this to `~/code/pandas-1.5`. We will also checkout a particular commit to prevent any future changes made to 1.5.x from rendering the solution in this article incompatible. All of this can be accmoplished with the following commands:
+You will also want to get a copy of the pandas 1.5 source code local to your computer. For this article we assume that source code will exist in a local directory named `~/code/pandas-1.5`. We will also checkout a particular commit to prevent any future changes made to 1.5.x from rendering the solution in this article incompatible.
 
 .. code-block:: sh
 
+   willayd@willayd:~$ mkdir -p ~/code
    willayd@willayd:~$ git clone --depth=1 -b 1.5.x https://github.com/pandas-dev/pandas.git ~/code/pandas-1.5
    willayd@willayd:~$ cd ~/code/pandas-1.5
    willayd@willayd:~$ git checkout 778ab82
 
-For data we can use the US Census `2020 SUSB Annual Datasets by Establishment Industry <https://www.census.gov/data/datasets/2020/econ/susb/2020-susb.html>`_ file. You can download the `raw data <https://www2.census.gov/programs-surveys/susb/datasets/2020/us_state_6digitnaics_2020.txt>`_ directly; be sure to save this as a file name `us_state_6digitnaics_2020.txt` to `~/code/pandas-1.5` on your local computer.
+For data we can use the US Census `2020 SUSB Annual Datasets by Establishment Industry <https://www.census.gov/data/datasets/2020/econ/susb/2020-susb.html>`_ file, which contains this `raw data <https://www2.census.gov/programs-surveys/susb/datasets/2020/us_state_6digitnaics_2020.txt>`_. Save the raw data to a file name `us_state_6digitnaics_2020.txt` located in `~/code/pandas-1.5`.
 
 At this point we have data and the supporting files we need. If using docker, start up your container with ``docker run --rm -it -v ${HOME}/code/pandas-1.5:/data -w /data willayd/blog-posts:pandas-callgrind``.
 
 Building pandas for use with callgrind
 --------------------------------------
 
-In the simplest of use cases, we can follow the `standard pandas instructions <https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html>`_ for building the library and run it via callgrind to get a high level summary of which *functions* are taking the most time. However, we can do better and get *line-level* profiling if we compile our C extensions with debugging symbols. If you worked through my previous article on `debugging Python extensions <{filename}/debugging_python.rst>`_ you would have seen us do this directly via gcc by passing the `-g3` flag. In our current use case with the pandas code base, we follow their documented instructions for `debugging C extensions in pandas <https://pandas.pydata.org/pandas-docs/version/1.5/development/debugging_extensions.html>`_ and instead use a `--with-debugging-symbols` flag. Both ultimately get us to the same place.
+In the simplest of use cases, we can follow the `standard pandas instructions <https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html>`_ for building the library and run it via callgrind to get a high level summary of which *functions* are taking the most time. However, we can do better and get *line-level* profiling if we compile our C extensions with debugging symbols.
+
+If you worked through my previous article on `debugging Python extensions <{filename}/debugging_python.rst>`_ you would have seen us do this directly via gcc by passing the `-g3` flag. In our current use case with the pandas code base, we follow their documented instructions for `debugging C extensions in pandas <https://pandas.pydata.org/pandas-docs/version/1.5/development/debugging_extensions.html>`_ and instead use a `--with-debugging-symbols` flag. Both ultimately get us to the same place.
 
 .. code-block:: sh
 
@@ -46,16 +49,12 @@ In the simplest of use cases, we can follow the `standard pandas instructions <h
    copying build/lib.linux-x86_64-cpython-310-pydebug/pandas/_libs/json.cpython-310d-x86_64-linux-gnu.so -> pandas/_libs
    root@90e75e54ee98:/data#
 
-Your build should have completed without error. If you run into any issues with the compilation you can try reducing the parallel compilation by removing the `-j4` flag; this will make your build take longer but should be stable (see `issue #47305 <https://github.com/pandas-dev/pandas/issues/47305>`_ for background information.
-
-.. note::
-
-   The `setup.py <https://github.com/pandas-dev/pandas/blob/1.5.x/setup.py>`_ file is responsible for mapping an argument like `--with-debugging-symbols` back to a flag like `-g3` on gcc. The 1.5 series of pandas uses `setuptools <https://setuptools.pypa.io/en/latest/setuptools.html>`_ as a build system; this is subject to change in future versions
+Your build should have completed without error. If you run into any issues with the compilation you can try reducing the parallel compilation by removing the `-j4` flag; this will make your build take longer but should be stable (see `issue #47305 <https://github.com/pandas-dev/pandas/issues/47305>`_ for background information).
 
 Timing read_csv with callgrind
 ------------------------------
 
-With the build out of the way, we can now run our program under callgrind. Since callgrind is part of the valgrind suite, you will find information on the tool via ``make callgrind``. Our use case for now can be accomplished with ``valgrind --tool=callgrind --callgrind-out-file=callgrind.out python3 -c "import pandas as pd; pd.read_csv('us_state_6digitnaics_2020.txt', encoding='cp1252')"``. This one command runs our read_csv call while being traced by callgrind, and writes the results of the trace to `callground.out` for us. Note that this adds some call overhead, so expect a slowdown in your application running via callgrind.
+With the build out of the way, we can now run our program under callgrind. To do this execute ``valgrind --tool=callgrind --callgrind-out-file=callgrind.out python3 -c "import pandas as pd; pd.read_csv('us_state_6digitnaics_2020.txt', encoding='cp1252')"``. This one command runs our read_csv call while being traced by callgrind, and writes the results of the trace to `callground.out` for us. Note that this adds some call overhead, so expect execution to be slower than normal.
 
 By default the output from callgrind is not very readable. Interested readers can peruse the `Callgrind Format Specification <https://valgrind.org/docs/manual/cl-format.html>`_ for a deeper understanding, but for this article we will use the `callgrind_annotate` command to inspect the output. This writes to stdout by default, so let's run it to a pager like `less` via ``callgrind_annotate callgrind.out | less``. The contents should look as follows:
 
@@ -98,9 +97,11 @@ By default the output from callgrind is not very readable. Interested readers ca
 
 The first thing to note is the total number of `Instructions Read (Ir)` for the program, which comes out to 14,377,625,638 instructions. Towards the bottom of the above snippet we see the top three function calls are `tokenize_bytes`, `_PyUnicode_CheckConsistency`, and `__memset_avx2_unaligned_arms`. Those are listed at 3,070,417,258 then 1,156,873,554 then 1,138,167,522 instructions in total, respectively. The total instructions in the first column of each of these functions is followed by a relative percentage to the total Ir of the program.
 
-The main function of interest to us will be the very first one, not only because it represents the largest amount of instructions, but also because it comes directly from our user code. The second function comes from `_PyUnicode_CheckConsistecny` in the CPython standard library, and the third function comes from assembly code bundled with `libc <https://www.gnu.org/software/libc/>`_. While we may learn something from diving further into those, we have less control to change them than our user code.
+The main function of interest to us will be the very first one, not only because it represents the largest amount of instructions, but also because it comes directly from our user code. The second function comes from `_PyUnicode_CheckConsistency` in the CPython standard library, and the third function comes from assembly code bundled with `libc <https://www.gnu.org/software/libc/>`_. While we may learn something from diving further into those, we have less control to change them than our user code.
 
-At this point we know `tokenize_bytes` is where we spend the most time, but if you look at the source code you will see that it is a pretty big function. So how do we know *where* within this function we are spending our time? Because we compiled our application with debug symbols, callgrind fortunately gives us *line level* profiling information further down in the file. Assuming you paged the `callgrind_annotate` output to `less` in the above command, input ``/tokenize_bytes`` and hit ``n`` to page through search results until you find the annotated function.
+At this point we know `tokenize_bytes` is where we spend the most time, but if you look at the source code you will see that it is a pretty big function. So how do we know *where* within this function we are spending our time?
+
+Since we compiled our application with debug symbols, callgrind fortunately gives us *line level* profiling information further down in the file. Assuming you paged the `callgrind_annotate` output to `less` in the above command, input ``/tokenize_bytes`` and hit ``n`` to page through search results until you find the annotated function.
 
 .. code-block:: sh
 
@@ -161,8 +162,8 @@ Where to go from here
 
 For those interested in a more visual representation of their profile than what `callgrind_annotate` can offer, the `KCachegrind <https://kcachegrind.github.io/html/Home.html>`_ tool may prove very useful. Here is what the profile we created above would look like when opened within that tool:
 
-.. image:: KCachegrind_output.png
+.. image:: {static}/images/KCachegrind_output.jpg
 
-In the real world you will also want to profile a few different inputs. We only went over the single US Census source file in this article, but you may be surprised to see different file sizes and contents yield different bottlenecks within your application.
+In the real world you will also want to profile a few different input files. We only went over the single US Census source file in this article, but you may be surprised to see different file sizes and contents yield different bottlenecks within your application.
 
 As a final note, this article showed you how to identify potential bottlenecks within your application, without offering a point of view on how to fix them. In a future article we will dive into using tools like `godbolt <https://godbolt.org/>`_ or `gdb <https://sourceware.org/gdb/>`_ to view the assembly generated by our functions, which would be helpful to understand at a low level and yield insights on optimizations we may be able to make.
