@@ -6,7 +6,7 @@ Profiling Python Extensions with callgrind
 :category: profiling
 :tags: python, c
 :author: Will Ayd
-:summary: It is common practice in the Python world to write C/C++ extensions as a means for optimizing performance. But how can you find bottlenecks then in your C/C++ extensions? Use callgrind of course!
+:summary: It is common practice in the Python world to write C/C++ extensions to optimize performance, but what do you do when that is not enough? How could you find bottlenecks *within* your extensions? Use callgrind of course!
 
 At some point in the development of a high performance Python library, you will likely find yourself writing C/C++ extensions (whether by hand or via `Cython <https://cython.org/>`_). That alone may achieve the performance you desire, but in cases where you *still* need more what do you do? The Python runtime won't be able to track the performance details of any lower-level extensions, so many of the great tools used for Python profiling are out of the question. Instead we need to opt for profiling tools that directly target C/C++ executables.
 
