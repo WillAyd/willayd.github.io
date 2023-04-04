@@ -163,6 +163,7 @@ Where to go from here
 For those interested in a more visual representation of their profile than what `callgrind_annotate` can offer, the `KCachegrind <https://kcachegrind.github.io/html/Home.html>`_ tool may prove very useful. Here is what the profile we created above would look like when opened within that tool:
 
 .. image:: {static}/images/KCachegrind_output.jpg
+   :alt: KCachegrind Visualization
 
 In the real world you will also want to profile a few different input files. We only went over the single US Census source file in this article, but you may be surprised to see different file sizes and contents yield different bottlenecks within your application.
 
