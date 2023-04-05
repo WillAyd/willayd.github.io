@@ -8,7 +8,7 @@ Fundamental Python Debugging Part 3 - Cython Extensions
 :author: Will Ayd
 :description: Cython extensions are easy to write but difficult to debug. This article highlights how to use cygdb for that purpose, building off of knowledge of gdb and pdb
 :summary: This article shows you how to use cygdb to debug Cython extensions. While dauting at first glance, the knowledge of pdb and gdb we gained in the previous two articles makes it much easier to step through Cython!
-:image: https://willayd.com/images/logo.svg
+:image: https://willayd.com/images/og_logo.png
 
 For the unaware, Cython is a transpiler from a Python-like syntax into C files. This gets you close to C performance while writing files that aren't *that* dissimilar from Python. It is used extensively in the scientific Python community to generate high-performance extensions. A common approach to optimize Python libraries is to make sure you are as efficient as possible in pure Python, before building your code in Cython, and commonly as a last resort writing your C/C++ extensions by hand.
 

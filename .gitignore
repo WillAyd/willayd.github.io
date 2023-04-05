@@ -1,3 +1,5 @@
 output
 pelican-plugins
 __pycache__
+*.pyc
+seo_report.html

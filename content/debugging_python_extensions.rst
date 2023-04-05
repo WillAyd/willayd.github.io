@@ -8,7 +8,7 @@ Fundamental Python Debugging Part 2 - Python Extensions
 :author: Will Ayd
 :description: Writing Python extensions can be daunting, particularly without proper debugging tools. This article walks you through gdb to make that process simple.
 :summary: This article shows you how to step into Python extensions, which are often used to wrap C/C++ libraries for interoperability or optimized performance. Because pdb cannot step through Python extensions we opt for gdb instead.
-:image: https://willayd.com/images/logo.svg
+:image: https://willayd.com/images/og_logo.png
 
 `Python extensions <https://docs.python.org/3/extending/index.html>`_ are a key component in making Python libraries *fast*. With an extension, you have the ability to write code in a lower-level language like C or C++ but still interact with that code via the Python runtime. Many high-performance scientific Python libraries use this type of architecture, whether through hand-writing a C/C++ extension(s) and/or generating them using a Python to C/C++ *transpiler* like `Cython <https://cython.org/>`_.
 
