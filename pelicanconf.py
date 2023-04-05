@@ -23,7 +23,7 @@ THEME = 'themes/Papyrus'
 THEME_STATIC_PATHS = ['static']
 THEME_TEMPLATES_OVERRIDES = ['template_overrides/Papyrus/templates']
 PLUGIN_PATHS = ['pelican-plugins']
-PLUGINS = ['readtime', 'search', 'neighbors', 'pelican-toc', 'seo']
+PLUGINS = ['readtime', 'search', 'neighbors', 'pelican-toc', 'seo', 'inject_ogtags']
 STATIC_PATHS = [
     'images',
     'images/favicon.ico',
