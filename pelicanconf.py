@@ -23,11 +23,10 @@ THEME = 'themes/Papyrus'
 THEME_STATIC_PATHS = ['static']
 THEME_TEMPLATES_OVERRIDES = ['template_overrides/Papyrus/templates']
 PLUGIN_PATHS = ['pelican-plugins']
-PLUGINS = ['readtime', 'search', 'neighbors', 'pelican-toc']
+PLUGINS = ['readtime', 'search', 'neighbors', 'pelican-toc', 'seo']
 STATIC_PATHS = [
     'images',
     'images/favicon.ico',
-    'extra/robots.txt',
     'extra/CNAME',
     'css',
     ]
@@ -84,3 +83,9 @@ DEFAULT_PAGINATION = 8
 
 # DISQUS_SITENAME = ''
 # GOOGLE_ANALYTICS = ''
+
+SEO_REPORT = True
+SEO_ENHANCER = True
+SEO_ENHANCER_OPEN_GRAPH = True
+SEO_ENCHANCER_TWITTER_CARDS = False
+LOGO = "https://willayd.com/images/logo.svg"
