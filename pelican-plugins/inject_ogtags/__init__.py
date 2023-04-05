@@ -12,6 +12,22 @@ def add_ogtags_to_default_pages(path, context):
     if not context.get("article") and not context.get("page"):
         with open(path, encoding="utf8") as html_file:
             soup = BeautifulSoup(html_file, features="html.parser")
+
+        twitter_tag = soup.new_tag(
+            "meta", content="summary",
+        )
+        twitter_tag["name"] = "twitter:card"
+        soup.head.append(twitter_tag)
+
+        url_tag = soup.new_tag(
+            "meta", content="https://willayd.com", property="og:url"
+        )
+        soup.head.append(url_tag)
+
+        type_tag = soup.new_tag(
+            "meta", content="website", property="og:type",
+        )
+        soup.head.append(type_tag)
         
         og_locale_tag = soup.new_tag(
             "meta", content="en_US", property="og:locale"
