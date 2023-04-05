@@ -8,6 +8,7 @@ Fundamental Python Debugging Part 1 - Python
 :author: Will Ayd
 :description: This article shows you how to use pdb to debug Python applications. pdb offers a lot of hidden functionality and helps you learn debuggers for other languages.
 :summary: This article shows you how to use pdb to debug your Python applications. While not the most visually appealing option, knowledge of pdb becomes very useful for using gdb, which will be covered in the next article on debugging Python extensions.
+:image: https://willayd.com/images/logo.svg
 
 The topic of debugging Python is well-covered. Regardless of whether you want to use your IDE interactively or work from a console with `pdb <https://docs.python.org/3/library/pdb.html>`_, chances are this is not the first article you have read on the topic.
 
