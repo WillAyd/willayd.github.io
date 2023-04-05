@@ -1,29 +1,33 @@
 <!DOCTYPE html>
+
 <html lang="en">
-
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content="Pelican" />
-    <meta name="description" content="Will Ayd Blog Posts">
-    <title>Fundamental Python Debugging Part 1 - Python</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" />
-    <link rel="stylesheet" type="text/css" href="https://willayd.github.io/theme/css/main.css" />
-    <link rel="stylesheet" type="text/css" href="https://willayd.github.io/theme/css/pygment.css" />
-    <link rel="shortcut icon" href="https://willayd.github.io/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="https://willayd.github.io/theme/css/stork.css">
-    <link rel="stylesheet" media="screen and (prefers-color-scheme: dark)"
-        href="https://willayd.github.io/theme/css/stork-dark.css">
-    <link
-        href="https://willayd.github.io/feeds/all.atom.xml"
-        type="application/atom+xml" rel="alternate" title="Will Ayd Atom Feed" />
-<meta name="description" content="This article shows you how to use pdb to debug your Python applications. While not the most visually appealing option, knowledge of pdb becomes..." />
-</head>
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1FZ91XSPCR"></script>
+<script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
 
-<body class="min-h-screen flex flex-col max-w-7xl lg:max-w-none text-zinc-800 bg-neutral-100 
-    dark:bg-neutral-900 dark:text-zinc-300 container mx-auto justify-center md:px-3 ">
-    <script>
+      gtag('config', 'G-1FZ91XSPCR');
+    </script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Pelican" name="generator"/>
+<meta content="Will Ayd Blog Posts" name="description"/>
+<title>Fundamental Python Debugging Part 1 - Python</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto+Slab|Ruda" rel="stylesheet"/>
+<link href="https://willayd.com/theme/css/main.css" rel="stylesheet" type="text/css"/>
+<link href="https://willayd.com/theme/css/pygment.css" rel="stylesheet" type="text/css"/>
+<link href="https://willayd.com/favicon.ico" rel="shortcut icon" type="image/x-icon"/>
+<link href="https://willayd.com/theme/css/stork.css" rel="stylesheet"/>
+<link href="https://willayd.com/theme/css/stork-dark.css" media="screen and (prefers-color-scheme: dark)" rel="stylesheet"/>
+<link href="https://willayd.com/css/custom.css" rel="stylesheet"/>
+<link href="https://willayd.com/feeds/all.atom.xml" rel="alternate" title="Will Ayd Atom Feed" type="application/atom+xml">
+</link><link href="https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="canonical"/><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Will Ayd", "item": "https://willayd.com"}, {"@type": "ListItem", "position": 2, "name": "Fundamental python debugging part 1 python", "item": "https://willayd.com/fundamental-python-debugging-part-1-python.html"}]}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "author": {"@type": "Person", "name": "Will Ayd"}, "publisher": {"@type": "Organization", "name": "Will Ayd"}, "headline": "Fundamental Python Debugging Part 1 - Python", "about": "debugging", "datePublished": "2023-02-08 00:00", "image": "https://willayd.com/images/og_logo.png"}</script><meta content="summary" name="twitter:card"/><meta content="https://willayd.com/fundamental-python-debugging-part-1-python.html" property="og:url"/><meta content="article" property="og:type"/><meta content="Fundamental Python Debugging Part 1 - Python" property="og:title"/><meta content="This article shows you how to use pdb to debug Python applications. pdb offers a lot of hidden functionality and helps you learn debuggers for other languages." property="og:description"/><meta content="https://willayd.com/images/og_logo.png" property="og:image"/><meta content="en_US" property="og:locale"/></head>
+<body class="min-h-screen flex flex-col max-w-7xl lg:max-w-none text-zinc-800 bg-neutral-100 dark:bg-neutral-900 dark:text-zinc-300 container mx-auto justify-center md:px-3">
+<script>
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
                 '(prefers-color-scheme: dark)').matches)) {
             document.documentElement.classList.add('dark');
@@ -31,106 +35,77 @@
             document.documentElement.classList.remove('dark')
         }
     </script>
-    <nav class="sm:flex sm:justify-between xl:ml-32 pl-4 items-center">
-        <div class="flex pt-4">
-            <h1 class="font-semibold text-2xl"><a href="https://willayd.github.io/">Will Ayd</a></h1>
-            <button id="theme-toggle" type="button" aria-label="Light|Dark"
-                class="text-zinc-700 dark:text-zinc-400 rounded-full focus:outline-none text-sm ml-2 p-1">
-                <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
-                </svg>
-                <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                        fill-rule="evenodd" clip-rule="evenodd"></path>
-                </svg>
-            </button>
-        </div>
-        <ul class="flex flex-wrap lg:mr-24 md:pt-0">
-            <li class="mr-4 pt-6"><a  href="https://willayd.github.io/archives.html">Archive</a></li>
-            <li class="mr-4 pt-6"><a                     href="https://willayd.github.io/categories.html">Categories</a></li>
-            <li class="mr-4 pt-6"><a  href="https://willayd.github.io/tags.html">Tags</a></li>
-            <li class="mr-4 pt-6"><a  href="https://willayd.github.io/search.html">Search</a></li>
-        </ul>
-    </nav>
-    <div class="flex-grow md:max-w-screen-md md:mx-auto md:w-3/4 px-4">
-        <nav class="text-zinc-800 dark:text-zinc-300 mt-12 pb-2 md:mt-16" aria-label="Breadcrumb">
-            <ul class="p-0 inline-flex items-center">
-                <li class="flex items-center">
-                    <a href="https://willayd.github.io/" class="text-zinc-800 dark:text-zinc-300 inline-flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <path
-                                d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
-                            </path>
-                        </svg>
+<nav class="sm:flex sm:justify-between xl:ml-32 pl-4 items-center">
+<div class="flex pt-4">
+<h2 class="font-semibold text-2xl"><a href="https://willayd.com/">Will Ayd</a></h2>
+<button aria-label="Light|Dark" class="text-zinc-700 dark:text-zinc-400 rounded-full focus:outline-none text-sm ml-2 p-1" id="theme-toggle" type="button">
+<svg class="w-5 h-5 hidden" fill="currentColor" id="theme-toggle-dark-icon" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+</svg>
+<svg class="w-5 h-5 hidden" fill="currentColor" id="theme-toggle-light-icon" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path clip-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd"></path>
+</svg>
+</button>
+</div>
+<ul class="flex flex-wrap lg:mr-24 md:pt-0">
+<li class="mr-4 pt-6"><a href="https://willayd.com/archives.html">Archive</a></li>
+<li class="mr-4 pt-6"><a href="https://willayd.com/categories.html">Categories</a></li>
+<li class="mr-4 pt-6"><a href="https://willayd.com/tags.html">Tags</a></li>
+<li class="mr-4 pt-6"><a href="https://willayd.com/search.html">Search</a></li>
+</ul>
+</nav>
+<div class="flex-grow md:max-w-screen-md md:mx-auto md:w-3/4 px-4">
+<nav aria-label="Breadcrumb" class="text-zinc-800 dark:text-zinc-300 mt-12 pb-2 md:mt-16">
+<ul class="p-0 inline-flex items-center">
+<li class="flex items-center">
+<a class="text-zinc-800 dark:text-zinc-300 inline-flex items-center" href="https://willayd.com/">
+<svg class="w-5 h-5 mr-2" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+<path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+</path>
+</svg>
                         Home
                     </a>
-                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 320 512">
-                        <path
-                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
-                    </svg>
-                </li>
-                <li class="flex items-center">
-                    <a href="https://willayd.github.io/categories.html">Categories</a>
-                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 320 512">
-                        <path
-                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
-                    </svg>
-                </li>
-                <li class="flex items-center">
-                    <a href="https://willayd.github.io/category/debugging.html">debugging</a>
-                    <svg class="fill-current w-3 h-3 mr-2 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-                        <path
-                            d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z" />
-                    </svg>
-                </li>
-            </ul>
-        </nav>
-
+<svg class="fill-current w-3 h-3 mr-2 ml-1" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path>
+</svg>
+</li>
+<li class="flex items-center">
+<a href="https://willayd.com/categories.html">Categories</a>
+<svg class="fill-current w-3 h-3 mr-2 ml-1" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path>
+</svg>
+</li>
+<li class="flex items-center">
+<a href="https://willayd.com/category/debugging.html">debugging</a>
+<svg class="fill-current w-3 h-3 mr-2 ml-1" viewbox="0 0 320 512" xmlns="http://www.w3.org/2000/svg">
+<path d="M285.476 272.971L91.132 467.314c-9.373 9.373-24.569 9.373-33.941 0l-22.667-22.667c-9.357-9.357-9.375-24.522-.04-33.901L188.505 256 34.484 101.255c-9.335-9.379-9.317-24.544.04-33.901l22.667-22.667c9.373-9.373 24.569-9.373 33.941 0L285.475 239.03c9.373 9.372 9.373 24.568.001 33.941z"></path>
+</svg>
+</li>
+</ul>
+</nav>
 <main>
-  <header>
-    <h1 class="font-semibold text-3xl my-2">Fundamental Python Debugging Part 1 - Python</h1>
-    <footer class="flex text-sm text-zinc-800 dark:text-zinc-400">
-      <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
-        <time>February 08, 2023</time>
-        <div>
-          <span>&nbsp;·&nbsp;27 min read</span>
-        </div>
-        <div>
-          <span>&nbsp;·&nbsp;Will Ayd</span>
-        </div>
-      </div>
-    </footer>
-  </header>
-  <details class="flex flex-col my-6 p-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg">
-    <summary class="text-lg font-bold">Table of contents</summary>
-    <div class="mx-4 px-4 underline">
-      <div id="toc"><ul><li><a class="toc-href" href="#setting-up-your-example" title="Setting up your example">Setting up your example</a></li><li><a class="toc-href" href="#part-1-debugging-exceptions" title="Part 1: Debugging exceptions">Part 1: Debugging exceptions</a></li><li><a class="toc-href" href="#part-2-debugging-logical-errors" title="Part 2: Debugging logical errors">Part 2: Debugging logical errors</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
-    </div>
-  </details>
-  <div class="max-w-7xl container mx-auto my-8 text-zinc-800 dark:text-zinc-300  
-              prose lg:max-w-none prose-headings:text-zinc-800 prose-headings:dark:text-zinc-300 
-              prose-h1:text-3xl lg:prose-h1:text-3xl prose-headings:font-semibold 
-              prose-pre:bg-zinc-200 prose-pre:text-zinc-800
-              dark:prose-pre:bg-zinc-800 dark:prose-pre:text-zinc-200
-              prose-blockquote:text-zinc-800
-              dark:prose-blockquote:text-zinc-200
-              prose-a:text-slate-600 prose-a:font-normal
-              dark:prose-a:text-slate-400
-              dark:prose-strong:text-zinc-200 
-              dark:prose-code:text-zinc-200
-              dark:prose-code:bg-zinc-800
-              prose-code:bg-zinc-200
-              prose-code:font-light
-              prose-img:rounded-md
-              sm:text-left md:text-justify
-              ">
-    <p>The topic of debugging Python is well-covered. Regardless of whether you want to use your IDE interactively or work from a console with <a class="reference external" href="https://docs.python.org/3/library/pdb.html">pdb</a>, chances are this is not the first article you have read on the topic.</p>
+<header>
+<h1 class="font-semibold text-3xl my-2">Fundamental Python Debugging Part 1 - Python</h1>
+<footer class="flex text-sm text-zinc-800 dark:text-zinc-400">
+<div class="flex text-xs text-zinc-800 dark:text-zinc-400">
+<time>February 08, 2023</time>
+<div>
+<span> · 27 min read</span>
+</div>
+<div>
+<span> · Will Ayd</span>
+</div>
+</div>
+</footer>
+</header>
+<details class="flex flex-col my-6 p-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg">
+<summary class="text-lg font-bold">Table of contents</summary>
+<div class="mx-4 px-4 underline">
+<div id="toc"><ul><li><a class="toc-href" href="#setting-up-your-example" title="Setting up your example">Setting up your example</a></li><li><a class="toc-href" href="#part-1-debugging-exceptions" title="Part 1: Debugging exceptions">Part 1: Debugging exceptions</a></li><li><a class="toc-href" href="#part-2-debugging-logical-errors" title="Part 2: Debugging logical errors">Part 2: Debugging logical errors</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
+</div>
+</details>
+<div class="max-w-7xl container mx-auto my-8 text-zinc-800 dark:text-zinc-300 prose lg:max-w-none prose-headings:text-zinc-800 prose-headings:dark:text-zinc-300 prose-h1:text-3xl lg:prose-h1:text-3xl prose-headings:font-semibold prose-pre:bg-zinc-200 prose-pre:text-zinc-800 dark:prose-pre:bg-zinc-800 dark:prose-pre:text-zinc-200 prose-blockquote:text-zinc-800 dark:prose-blockquote:text-zinc-200 prose-a:text-slate-600 prose-a:font-normal dark:prose-a:text-slate-400 dark:prose-strong:text-zinc-200 dark:prose-code:text-zinc-200 dark:prose-code:bg-zinc-800 prose-code:bg-zinc-200 prose-code:font-light prose-img:rounded-md sm:text-left md:text-justify">
+<p>The topic of debugging Python is well-covered. Regardless of whether you want to use your IDE interactively or work from a console with <a class="reference external" href="https://docs.python.org/3/library/pdb.html">pdb</a>, chances are this is not the first article you have read on the topic.</p>
 <p>In spite of the wealth of content, I've found that most articles on debugging Python are singularly focused on <em>debugging Python</em>. That may not seem like such a bad thing at face value, but developing Python at an advanced level requires not only knowledge of the language itself, but also of lower level languages like C/C++. Being an expert in all of these languages at one time is near impossible, so knowing how to debug them effectively is critical.</p>
 <p>Luckily, when viewed through the proper lens, there is a lot of overlap in the debugging tooling for these languages. The built-in Python pdb debugger borrows much of its utility from <a class="reference external" href="https://sourceware.org/gdb/">gdb</a>, which will help you debug C/C++/Rust/Fortran, etc... gdb itself is extendable <a class="reference external" href="https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python">using Python</a>, and this extensibility is the reason why things like the <a class="reference external" href="https://cython.readthedocs.io/en/latest/src/userguide/debugging.html">Cython debugger</a> exist.</p>
 <p>Few if any other articles on debugging Python applications touch on these synchronicities. This and my next few blog posts attempt to highlight this for you and help you seamlessly transition across the aforementioned tools.</p>
@@ -590,93 +565,98 @@ The<span class="w"> </span>program<span class="w"> </span>finished<span class="w
 <h2 id="closing-thoughts">Closing Thoughts</h2>
 <p>If you have made it this far congratulations! With modern visual debuggers integrated into IDEs, the way of debugging illustrated above may not be the most commonplace. However, through liberal use of the <tt class="docutils literal">help</tt> command you may find that <tt class="docutils literal">pdb</tt> has many features that are not implemented or obvious to use in higher level debuggers. Barring some differences, you'll also find that this method of using <tt class="docutils literal">pdb</tt> translates well into using <tt class="docutils literal">gdb</tt> and extensions like the Cython debugger, which will be represented in future blog posts.</p>
 </div>
-
-    <!-- <div class="aspect-w-16 aspect-h-9 mx-auto"></div> CSS placeholder -->
-  </div>
-  <footer class="flex flex-col mt-10 ">
-    <ul class="flex flex-wrap">
-        <li
-          class="bg-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 mb-2 mr-2 px-3 py-1.5 rounded-md transition ease-in active:-translate-y-1 active:scale-110 duration-75">
-          <a href="https://willayd.github.io/tag/python.html">python</a>
-        </li>
-    </ul>
-    <div class="flex w-full my-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
-      <div class="w-1/2 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-l-lg">
-        <a class="flex flex-col pr-2" href="https://willayd.github.io/fundamental-python-debugging-part-2-python-extensions.html">
-          <div class="mx-4 py-2 text-left">
-            <p class="text-zinc-600 dark:text-zinc-300 text-sm">« PREV PAGE</p>
-            <p class="text-left py-1 hover:underline">Fundamental Python Debugging Part 2 - Python Extensions</p>
-          </div>
-        </a>
-      </div>
-    </div>
-    <div class="flex bg-zinc-200 dark:bg-zinc-700 py-2 rounded-lg justify-center space-x-2 text-xs">
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="twitter" aria-label="share Features on twitter"
-            href="https://twitter.com/intent/tweet/?text=Features&amp;url=https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-twitter fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="linkedin" aria-label="share Features on linkedin"
-            href="https://www.linkedin.com/sharing/share-offsite/?url=https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-linkedin fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="reddit" aria-label="share Features on reddit"
-            href="https://reddit.com/submit?url=https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-reddit fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="facebook" aria-label="share Features on facebook"
-            href="https://facebook.com/sharer/sharer.php?u=https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-facebook fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="whatsapp" aria-label="share Features on whatsapp"
-            href="https://api.whatsapp.com/send?text=Features - https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-whatsapp fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-      <ul>
-        <li class="bg-gray-900 p-1 text-white rounded-md">
-          <a target="_blank" rel="noopener noreferrer" title="telegram" aria-label="share Features on telegram"
-            href="https://telegram.me/share/url?text=Features&amp;url=https://willayd.github.io/fundamental-python-debugging-part-1-python.html">
-            <i class="fab fa-telegram fa-2x" aria-hidden="true"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-  </footer>
-  <div>
-  </div>
+<!-- <div class="aspect-w-16 aspect-h-9 mx-auto"></div> CSS placeholder -->
+</div>
+<footer class="flex flex-col mt-10">
+<ul class="flex flex-wrap">
+<li class="bg-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-800 dark:bg-zinc-700 text-zinc-600 dark:text-zinc-300 mb-2 mr-2 px-3 py-1.5 rounded-md transition ease-in active:-translate-y-1 active:scale-110 duration-75">
+<a href="https://willayd.com/tag/python.html">python</a>
+</li>
+</ul>
+<div class="flex w-full my-2 bg-zinc-200 dark:bg-zinc-700 rounded-lg">
+<div class="w-1/2 rounded-l-lg"></div>
+<div class="w-1/2 hover:bg-zinc-300 dark:hover:bg-zinc-800 rounded-r-lg">
+<a class="flex flex-col" href="https://willayd.com/fundamental-python-debugging-part-2-python-extensions.html">
+<div class="text-right mx-4 py-2">
+<p class="text-zinc-600 dark:text-zinc-300 text-sm">NEXT PAGE »</p>
+<p class="text-right py-1 hover:underline">Fundamental Python Debugging Part 2 - Python Extensions</p>
+</div>
+</a>
+</div>
+</div>
+<div class="flex bg-zinc-200 dark:bg-zinc-700 py-2 rounded-lg justify-center space-x-2 text-xs">
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on twitter" href="https://twitter.com/intent/tweet/?text=Features&amp;url=https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="twitter">
+<i aria-hidden="true" class="fab fa-twitter fa-2x"></i>
+</a>
+</li>
+</ul>
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="linkedin">
+<i aria-hidden="true" class="fab fa-linkedin fa-2x"></i>
+</a>
+</li>
+</ul>
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on reddit" href="https://reddit.com/submit?url=https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="reddit">
+<i aria-hidden="true" class="fab fa-reddit fa-2x"></i>
+</a>
+</li>
+</ul>
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on facebook" href="https://facebook.com/sharer/sharer.php?u=https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="facebook">
+<i aria-hidden="true" class="fab fa-facebook fa-2x"></i>
+</a>
+</li>
+</ul>
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on whatsapp" href="https://api.whatsapp.com/send?text=Features - https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="whatsapp">
+<i aria-hidden="true" class="fab fa-whatsapp fa-2x"></i>
+</a>
+</li>
+</ul>
+<ul>
+<li class="bg-gray-900 p-1 text-white rounded-md">
+<a aria-label="share Features on telegram" href="https://telegram.me/share/url?text=Features&amp;url=https://willayd.com/fundamental-python-debugging-part-1-python.html" rel="noopener noreferrer" target="_blank" title="telegram">
+<i aria-hidden="true" class="fab fa-telegram fa-2x"></i>
+</a>
+</li>
+</ul>
+</div>
+</footer>
+<div>
+</div>
 </main>
-
-    </div>
-    <footer class="flex w-full text-xs justify-center mt-10 mb-6 text-zinc-600 dark:text-zinc-400">
-        <div class="px-4">
-            <span>©2022&nbsp;&#8226;&nbsp;</span>Powered by
-            <a class="underline" href="https://getpelican.com/">Pelican</a>&nbsp;&
+</div>
+<footer class="flex w-full text-xs justify-center mt-10 mb-6 text-zinc-600 dark:text-zinc-400">
+<div class="px-4">
+<span>©2022 • </span>Powered by
+            <a class="underline" href="https://getpelican.com/">Pelican</a> &amp;
             <a class="underline" href="https://github.com/aleylara/Papyrus">Papyrus</a>
-        </div>
-    </footer>
+</div>
+</footer>
+<script type="text/javascript">
+    (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+            (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
 
-<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-1FZ91XSPCR"></script>
-
-    <script>
+    ga('create', 'G-1FZ91XSPCR', 'auto');
+    ga('send', 'pageview');
+</script>
+<script>
         let themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         let themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
         if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia(
@@ -709,5 +689,4 @@ The<span class="w"> </span>program<span class="w"> </span>finished<span class="w
         });
     </script>
 </body>
-
 </html>
