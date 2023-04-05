@@ -25,7 +25,9 @@ def add_ogtags_to_default_pages(path, context):
         soup.head.append(og_title_tag)
 
         og_image_tag = soup.new_tag(
-            "meta", content="https://willayd.com/og_logo.png", property="og:image",
+            "meta",
+            content="https://willayd.com/images/og_logo.png",
+            property="og:image",
         )
         soup.head.append(og_image_tag)
 
