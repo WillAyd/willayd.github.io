@@ -12,5 +12,6 @@ repos:
     hooks:
     -   id: codespell
         types_or: [python, rst, markdown, cython, c]
+        args: [--ignore-words-list, crate]
         additional_dependencies: [tomli]
 exclude: pelican-plugins
