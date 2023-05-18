@@ -194,7 +194,7 @@
 <span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 </pre></div>
-<p>Studing the above closely, the <tt class="docutils literal">find_max_py</tt> function is the bridge between Rust and Python, and it ultimately dispatches to the <tt class="docutils literal">find_max</tt> function. That function accepts a 2 dimensional view of an array, and returns a newly created 1D array full of 64 bit integers. Within the function body, you see the dynamic creation of the return value, as well as iteration by column. While the semantics vary, you should see that this follows the same general outline as our Cython implementation.</p>
+<p>Studying the above closely, the <tt class="docutils literal">find_max_py</tt> function is the bridge between Rust and Python, and it ultimately dispatches to the <tt class="docutils literal">find_max</tt> function. That function accepts a 2 dimensional view of an array, and returns a newly created 1D array full of 64 bit integers. Within the function body, you see the dynamic creation of the return value, as well as iteration by column. While the semantics vary, you should see that this follows the same general outline as our Cython implementation.</p>
 <p>With this in place, run <tt class="docutils literal">maturin develop <span class="pre">--release</span></tt> from the project root. This will take care of installing the local source code into a Python package with optimizations.</p>
 </div>
 <div class="section" id="comparing-results">
@@ -290,7 +290,7 @@
 <span class="o">&gt;&gt;&gt;</span> <span class="n">rustpy</span><span class="o">.</span><span class="n">find_max_parallel</span><span class="p">(</span><span class="n">arr2</span><span class="p">)</span>
 <span class="n">rustpy</span> <span class="n">took</span> <span class="mi">38</span> <span class="n">milliseconds</span>
 </pre></div>
-<p>That's more like it! Whereas before we created 1_000_000 threads to operate on arrays of 100 records, now we use 100 threads to operate on arrays of 1_000_000 records. The relative cost of starting / stopping threads and synchronizing access via the mutex in this case is far lower than the relative performance gain we get from allowing threds to operate on large arrays in parallel.</p>
+<p>That's more like it! Whereas before we created 1_000_000 threads to operate on arrays of 100 records, now we use 100 threads to operate on arrays of 1_000_000 records. The relative cost of starting / stopping threads and synchronizing access via the mutex in this case is far lower than the relative performance gain we get from allowing threads to operate on large arrays in parallel.</p>
 </div>
 <div class="section" id="closing-thoughts">
 <h2 id="closing-thoughts">Closing Thoughts</h2>

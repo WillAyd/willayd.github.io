@@ -89,7 +89,7 @@
 &lt;span class="w"&gt;    &lt;/span&gt;&lt;span class="nb"&gt;Ok&lt;/span&gt;&lt;span class="p"&gt;(())&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;span class="p"&gt;}&lt;/span&gt;&lt;span class="w"&gt;&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;Studing the above closely, the &lt;tt class="docutils literal"&gt;find_max_py&lt;/tt&gt; function is the bridge between Rust and Python, and it ultimately dispatches to the &lt;tt class="docutils literal"&gt;find_max&lt;/tt&gt; function. That function accepts a 2 dimensional view of an array, and returns a newly created 1D array full of 64 bit integers. Within the function body, you see the dynamic creation of the return value, as well as iteration by column. While the semantics vary, you should see that this follows the same general outline as our Cython implementation.&lt;/p&gt;
+&lt;p&gt;Studying the above closely, the &lt;tt class="docutils literal"&gt;find_max_py&lt;/tt&gt; function is the bridge between Rust and Python, and it ultimately dispatches to the &lt;tt class="docutils literal"&gt;find_max&lt;/tt&gt; function. That function accepts a 2 dimensional view of an array, and returns a newly created 1D array full of 64 bit integers. Within the function body, you see the dynamic creation of the return value, as well as iteration by column. While the semantics vary, you should see that this follows the same general outline as our Cython implementation.&lt;/p&gt;
 &lt;p&gt;With this in place, run &lt;tt class="docutils literal"&gt;maturin develop &lt;span class="pre"&gt;--release&lt;/span&gt;&lt;/tt&gt; from the project root. This will take care of installing the local source code into a Python package with optimizations.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="comparing-results"&gt;
@@ -185,7 +185,7 @@
 &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;rustpy&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;find_max_parallel&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;arr2&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
 &lt;span class="n"&gt;rustpy&lt;/span&gt; &lt;span class="n"&gt;took&lt;/span&gt; &lt;span class="mi"&gt;38&lt;/span&gt; &lt;span class="n"&gt;milliseconds&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;That's more like it! Whereas before we created 1_000_000 threads to operate on arrays of 100 records, now we use 100 threads to operate on arrays of 1_000_000 records. The relative cost of starting / stopping threads and synchronizing access via the mutex in this case is far lower than the relative performance gain we get from allowing threds to operate on large arrays in parallel.&lt;/p&gt;
+&lt;p&gt;That's more like it! Whereas before we created 1_000_000 threads to operate on arrays of 100 records, now we use 100 threads to operate on arrays of 1_000_000 records. The relative cost of starting / stopping threads and synchronizing access via the mutex in this case is far lower than the relative performance gain we get from allowing threads to operate on large arrays in parallel.&lt;/p&gt;
 &lt;/div&gt;
 &lt;div class="section" id="closing-thoughts"&gt;
 &lt;h2 id="closing-thoughts"&gt;Closing Thoughts&lt;/h2&gt;
