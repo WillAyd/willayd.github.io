@@ -90,7 +90,7 @@
 <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
 <time>February 22, 2023</time>
 <div>
-<span> · 46 min read</span>
+<span> · 40 min read</span>
 </div>
 <div>
 <span> · Will Ayd</span>
@@ -121,10 +121,10 @@
 </blockquote>
 <p>Not all of these elements are required, but they all make debugging easier.</p>
 <p>To get started with the image, be sure to first install the <a class="reference external" href="https://docs.docker.com/engine/install">docker engine</a>, at which point you can then:</p>
-<div class="highlight"><pre><span></span>docker<span class="w"> </span>pull<span class="w"> </span>willayd/cpython-debugging
+<div class="highlight"><pre><span></span>docker pull willayd/cpython-debugging
 </pre></div>
 <p>A quick <tt class="docutils literal">docker image</tt> should show that same image on your local machine. Once you have the image installed, you will want to choose a location on your host computer to mount into the container you will run based off of that image, so something like:</p>
-<div class="highlight"><pre><span></span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-w<span class="w"> </span>/data<span class="w"> </span>-v<span class="w"> </span>&lt;PATH_TO_YOUR_WORK&gt;:/data<span class="w"> </span>willayd/cpython-debugging
+<div class="highlight"><pre><span></span>docker run --rm -it -w /data -v &lt;PATH_TO_YOUR_WORK&gt;:/data willayd/cpython-debugging
 </pre></div>
 <p>The <tt class="docutils literal"><span class="pre">-v</span></tt> flag here maps the part of its argument preceding the <tt class="docutils literal">:</tt> and locates it on your host computer. It then mounts that location from your host computer to the path specified after the <tt class="docutils literal">:</tt> within the container, which we've chosen above as <tt class="docutils literal">/data</tt>. Note that you can use shell expansion of environment variables like <tt class="docutils literal"><span class="pre">-v</span> <span class="pre">${HOME}/code:/data</span></tt> if you have your work locally in a <tt class="docutils literal">code</tt> subdirectory of your home directory. Even simpler, you could do <tt class="docutils literal"><span class="pre">-v</span> <span class="pre">${PWD}:/data</span></tt> if your shell is already within the directory you want to mount.</p>
 </div>
@@ -132,43 +132,43 @@
 <h2 id="building-our-first-extension">Building our first extension</h2>
 <p>Let's start with the following code in a file named <tt class="docutils literal">debugging_demo.c</tt>:</p>
 <div class="highlight"><pre><span></span><span class="cp">#define PY_SSIZE_T_CLEAN</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span><span class="cp"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
-<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="n">printf</span><span class="w"> </span><span class="p">(</span><span class="s">"Hello from the extension</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
-<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">printf</span><span class="w"> </span><span class="p">(</span><span class="s">"Hello from the extension</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">DebuggingDemoMethods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span>
-<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span>
-<span class="p">}</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">DebuggingDemoMethods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUC</span><span class="w"> </span><span class="n">PyInit_debugging_demo</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo_module</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="n">PyMODINIT_FUC</span><span class="w"> </span><span class="n">PyInit_debugging_demo</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo_module</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>I've saved this locally under <tt class="docutils literal"><span class="pre">~/code-demos</span></tt>, so I'm going to launch my docker container with <tt class="docutils literal">docker run <span class="pre">--rm</span> <span class="pre">-it</span> <span class="pre">-w</span> /data <span class="pre">-v</span> <span class="pre">${HOME}/code-demos:/data</span> <span class="pre">willayd/cpython-debugging</span></tt>. A quick <tt class="docutils literal">ls</tt> should confirm you have mounted everything properly:</p>
-<div class="highlight"><pre><span></span>willayd@willayd:~$<span class="w"> </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-w<span class="w"> </span>/data<span class="w"> </span>-v<span class="w"> </span><span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/code-demos:/data<span class="w"> </span>willayd/cpython-debugging
-root@4a6161a82673:/data#<span class="w"> </span>ls
+<div class="highlight"><pre><span></span>willayd@willayd:~$ docker run --rm -it -w /data -v <span class="si">${</span><span class="nv">HOME</span><span class="si">}</span>/code-demos:/data willayd/cpython-debugging
+root@4a6161a82673:/data# ls
 debugging_demo.c
 root@4a6161a82673:/data#
 </pre></div>
 <p>We can build our C module into a shared library, after which we will be able to load it into Python.</p>
-<div class="highlight"><pre><span></span>root@12a481d4fa4c:/data#<span class="w"> </span>gcc<span class="w"> </span>-g3<span class="w"> </span>-Wall<span class="w"> </span>-Werror<span class="w"> </span>-std<span class="o">=</span>c17<span class="w"> </span>-shared<span class="w"> </span>-fPIC<span class="w"> </span>-I/usr/local/include/python3.10d<span class="w"> </span>debugging_demo.c<span class="w"> </span>-o<span class="w"> </span>debugging_demo.so
-root@12a481d4fa4c:/data#<span class="w"> </span>ls
-debugging_demo.c<span class="w">  </span>debugging_demo.so
+<div class="highlight"><pre><span></span>root@12a481d4fa4c:/data# gcc -g3 -Wall -Werror -std<span class="o">=</span>c17 -shared -fPIC -I/usr/local/include/python3.10d debugging_demo.c -o debugging_demo.so
+root@12a481d4fa4c:/data# ls
+debugging_demo.c  debugging_demo.so
 </pre></div>
 <p><tt class="docutils literal">gcc</tt> is our tool for building the code, and all of the flags we provide here are documented in the <a class="reference external" href="https://gcc.gnu.org/onlinedocs/gcc/Invoking-GCC.html">GCC Command Options</a>.</p>
 <p><tt class="docutils literal"><span class="pre">-g3</span></tt> instructs gcc to insert debugging information into the target, including macros. Without this, you may not properly be able to debug your application, may be unable to inspect source code, and may see things like <tt class="docutils literal">optimized out</tt> when inspecting variables in gcc.</p>
@@ -176,125 +176,125 @@ debugging_demo.c<span class="w">  </span>debugging_demo.so
 <p><tt class="docutils literal"><span class="pre">-shared</span></tt> and <tt class="docutils literal"><span class="pre">-fPIC</span></tt> are both required for building a shared library, and <tt class="docutils literal"><span class="pre">-I/usr/local/include/python3.10d</span></tt> allows gcc to find our <tt class="docutils literal">Python.h</tt> header file. All of these are necessary to make our extension loadable from Python.</p>
 <p><tt class="docutils literal"><span class="pre">-o</span> debugging_demo.so</tt> created our shared library with an <tt class="docutils literal">.so</tt> extension, which is common on GNU/Linux platforms. On macOS you may see a similar concept with a <tt class="docutils literal">.dylib</tt> extension, whereas Windows has <tt class="docutils literal">.dll</tt></p>
 <p>Now that this shared library is available, it can be loaded, inspected and executed from the Python interpreter.</p>
-<div class="highlight"><pre><span></span>root@12a481d4fa4c:/data#<span class="w"> </span>python3
-Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
-Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
-&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_demo
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo.__doc__
+<div class="highlight"><pre><span></span>root@12a481d4fa4c:/data# python3
+Python <span class="m">3</span>.10.10+ <span class="o">(</span>heads/3.10:bac3fe7, Feb <span class="m">22</span> <span class="m">2023</span>, <span class="m">05</span>:56:35<span class="o">)</span> <span class="o">[</span>GCC <span class="m">11</span>.3.0<span class="o">]</span> on linux
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for</span> more information.
+&gt;&gt;&gt; import debugging_demo
+&gt;&gt;&gt; debugging_demo.__doc__
 <span class="s1">'A simple extension to showcase debugging'</span>
-&gt;&gt;&gt;<span class="w"> </span>dir<span class="o">(</span>debugging_demo<span class="o">)</span>
-<span class="o">[</span><span class="s1">'__doc__'</span>,<span class="w"> </span><span class="s1">'__file__'</span>,<span class="w"> </span><span class="s1">'__loader__'</span>,<span class="w"> </span><span class="s1">'__name__'</span>,<span class="w"> </span><span class="s1">'__package__'</span>,<span class="w"> </span><span class="s1">'__spec__'</span>,<span class="w"> </span><span class="s1">'say_hello_and_return_none'</span><span class="o">]</span>
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo.say_hello_and_return_none.__doc__
+&gt;&gt;&gt; dir<span class="o">(</span>debugging_demo<span class="o">)</span>
+<span class="o">[</span><span class="s1">'__doc__'</span>, <span class="s1">'__file__'</span>, <span class="s1">'__loader__'</span>, <span class="s1">'__name__'</span>, <span class="s1">'__package__'</span>, <span class="s1">'__spec__'</span>, <span class="s1">'say_hello_and_return_none'</span><span class="o">]</span>
+&gt;&gt;&gt; debugging_demo.say_hello_and_return_none.__doc__
 <span class="s1">'Says hello and returns none.'</span>
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo.say_hello_and_return_none<span class="o">()</span>
-Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>extension
+&gt;&gt;&gt; debugging_demo.say_hello_and_return_none<span class="o">()</span>
+Hello from the extension
 </pre></div>
 </div>
 <div class="section" id="inspecting-things-with-gdb">
 <h2 id="inspecting-things-with-gdb">Inspecting things with gdb</h2>
 <p>If we wanted to look at the intermediate state of things, we can pause execution and move around the stack like we did with <tt class="docutils literal">pdb</tt> in the previous article, but this time we will be using <tt class="docutils literal">gdb</tt>. To get started, simply run <tt class="docutils literal">gdb python3</tt>. Thereafter, <tt class="docutils literal">help</tt> is a good place to start.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span>
-List<span class="w"> </span>of<span class="w"> </span>classes<span class="w"> </span>of<span class="w"> </span>commands:
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">help</span>
+List of classes of commands:
 
-aliases<span class="w"> </span>--<span class="w"> </span>User-defined<span class="w"> </span>aliases<span class="w"> </span>of<span class="w"> </span>other<span class="w"> </span>commands.
-breakpoints<span class="w"> </span>--<span class="w"> </span>Making<span class="w"> </span>program<span class="w"> </span>stop<span class="w"> </span>at<span class="w"> </span>certain<span class="w"> </span>points.
-data<span class="w"> </span>--<span class="w"> </span>Examining<span class="w"> </span>data.
-files<span class="w"> </span>--<span class="w"> </span>Specifying<span class="w"> </span>and<span class="w"> </span>examining<span class="w"> </span>files.
-internals<span class="w"> </span>--<span class="w"> </span>Maintenance<span class="w"> </span>commands.
-obscure<span class="w"> </span>--<span class="w"> </span>Obscure<span class="w"> </span>features.
-running<span class="w"> </span>--<span class="w"> </span>Running<span class="w"> </span>the<span class="w"> </span>program.
-stack<span class="w"> </span>--<span class="w"> </span>Examining<span class="w"> </span>the<span class="w"> </span>stack.
-status<span class="w"> </span>--<span class="w"> </span>Status<span class="w"> </span>inquiries.
-support<span class="w"> </span>--<span class="w"> </span>Support<span class="w"> </span>facilities.
-text-user-interface<span class="w"> </span>--<span class="w"> </span>TUI<span class="w"> </span>is<span class="w"> </span>the<span class="w"> </span>GDB<span class="w"> </span>text<span class="w"> </span>based<span class="w"> </span>interface.
-tracepoints<span class="w"> </span>--<span class="w"> </span>Tracing<span class="w"> </span>of<span class="w"> </span>program<span class="w"> </span>execution<span class="w"> </span>without<span class="w"> </span>stopping<span class="w"> </span>the<span class="w"> </span>program.
-user-defined<span class="w"> </span>--<span class="w"> </span>User-defined<span class="w"> </span>commands.
+aliases -- User-defined aliases of other commands.
+breakpoints -- Making program stop at certain points.
+data -- Examining data.
+files -- Specifying and examining files.
+internals -- Maintenance commands.
+obscure -- Obscure features.
+running -- Running the program.
+stack -- Examining the stack.
+status -- Status inquiries.
+support -- Support facilities.
+text-user-interface -- TUI is the GDB text based interface.
+tracepoints -- Tracing of program execution without stopping the program.
+user-defined -- User-defined commands.
 
-Type<span class="w"> </span><span class="s2">"help"</span><span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span>a<span class="w"> </span>class<span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>a<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>commands<span class="w"> </span><span class="k">in</span><span class="w"> </span>that<span class="w"> </span>class.
-Type<span class="w"> </span><span class="s2">"help all"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>all<span class="w"> </span>commands.
-Type<span class="w"> </span><span class="s2">"help"</span><span class="w"> </span>followed<span class="w"> </span>by<span class="w"> </span><span class="nb">command</span><span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>full<span class="w"> </span>documentation.
-Type<span class="w"> </span><span class="s2">"apropos word"</span><span class="w"> </span>to<span class="w"> </span>search<span class="w"> </span><span class="k">for</span><span class="w"> </span>commands<span class="w"> </span>related<span class="w"> </span>to<span class="w"> </span><span class="s2">"word"</span>.
-Type<span class="w"> </span><span class="s2">"apropos -v word"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>full<span class="w"> </span>documentation<span class="w"> </span>of<span class="w"> </span>commands<span class="w"> </span>related<span class="w"> </span>to<span class="w"> </span><span class="s2">"word"</span>.
-Command<span class="w"> </span>name<span class="w"> </span>abbreviations<span class="w"> </span>are<span class="w"> </span>allowed<span class="w"> </span><span class="k">if</span><span class="w"> </span>unambiguous.
+Type <span class="s2">"help"</span> followed by a class name <span class="k">for</span> a list of commands <span class="k">in</span> that class.
+Type <span class="s2">"help all"</span> <span class="k">for</span> the list of all commands.
+Type <span class="s2">"help"</span> followed by <span class="nb">command</span> name <span class="k">for</span> full documentation.
+Type <span class="s2">"apropos word"</span> to search <span class="k">for</span> commands related to <span class="s2">"word"</span>.
+Type <span class="s2">"apropos -v word"</span> <span class="k">for</span> full documentation of commands related to <span class="s2">"word"</span>.
+Command name abbreviations are allowed <span class="k">if</span> unambiguous.
 <span class="o">(</span>gdb<span class="o">)</span>
 </pre></div>
 <p>Compared to <tt class="docutils literal">pdb</tt>, there are way more features within <tt class="docutils literal">gdb</tt> to sift through. <tt class="docutils literal">apropos</tt> or going through <tt class="docutils literal">help all</tt> may be a good place to start. The help menu by default uses a very simple pager; instead you may find it useful to open the help in something like <tt class="docutils literal">less</tt> using a pipe, i.e. <tt class="docutils literal">pipe help all | less</tt>.</p>
 <p>The <tt class="docutils literal">help status</tt> subsection introduces us to the <tt class="docutils literal">info</tt> command. <tt class="docutils literal">info breakpoint</tt> always lists your breakpoints, of which we have none right now.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>info<span class="w"> </span>breakpoint
-No<span class="w"> </span>breakpoints<span class="w"> </span>or<span class="w"> </span>watchpoints.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> info breakpoint
+No breakpoints or watchpoints.
 </pre></div>
 <p><tt class="docutils literal">help break</tt> gives great details on how to set a breakpoint. For now, let's go ahead and enter <tt class="docutils literal">break say_hello_and_return_none</tt> to enter the debugger when our function starts to execute.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>say_hello_and_return_none
-Function<span class="w"> </span><span class="s2">"say_hello_and_return_none"</span><span class="w"> </span>not<span class="w"> </span>defined.
-Make<span class="w"> </span>breakpoint<span class="w"> </span>pending<span class="w"> </span>on<span class="w"> </span>future<span class="w"> </span>shared<span class="w"> </span>library<span class="w"> </span>load?<span class="w"> </span><span class="o">(</span>y<span class="w"> </span>or<span class="w"> </span><span class="o">[</span>n<span class="o">])</span><span class="w"> </span>y
-Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>say_hello_and_return_none<span class="o">)</span><span class="w"> </span>pending.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">break</span> say_hello_and_return_none
+Function <span class="s2">"say_hello_and_return_none"</span> not defined.
+Make breakpoint pending on future shared library load? <span class="o">(</span>y or <span class="o">[</span>n<span class="o">])</span> y
+Breakpoint <span class="m">1</span> <span class="o">(</span>say_hello_and_return_none<span class="o">)</span> pending.
 </pre></div>
 <p>Python has not yet loaded our shared library, so gdb isn't sure yet that this function exists. It will become available when we start running our program, so you can enter <tt class="docutils literal">y</tt> when prompted above.</p>
 <p>At this point go ahead and <tt class="docutils literal">run</tt> to start the Python interpreter that gdb attached to. You can then import the module and execute the function, at which point gdb will come back to the forefront:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
-Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
-Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
-&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_demo
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo.say_hello_and_return_none<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> run
+Starting program: /usr/local/bin/python3
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+Python <span class="m">3</span>.10.10+ <span class="o">(</span>heads/3.10:bac3fe7, Feb <span class="m">22</span> <span class="m">2023</span>, <span class="m">05</span>:56:35<span class="o">)</span> <span class="o">[</span>GCC <span class="m">11</span>.3.0<span class="o">]</span> on linux
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for</span> more information.
+&gt;&gt;&gt; import debugging_demo
+&gt;&gt;&gt; debugging_demo.say_hello_and_return_none<span class="o">()</span>
 
-Breakpoint<span class="w"> </span><span class="m">1</span>,<span class="w"> </span>say_hello_and_return_none<span class="w"> </span><span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f4de7360230,<span class="w"> </span><span class="nv">args</span><span class="o">=</span>0x7f4de7674250<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_demo.c:7
-<span class="m">7</span><span class="w">      </span><span class="nb">printf</span><span class="w"> </span><span class="o">(</span><span class="s2">"Hello from the extension\n"</span><span class="o">)</span><span class="p">;</span>
+Breakpoint <span class="m">1</span>, say_hello_and_return_none <span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f4de7360230, <span class="nv">args</span><span class="o">=</span>0x7f4de7674250<span class="o">)</span> at debugging_demo.c:7
+<span class="m">7</span>      <span class="nb">printf</span> <span class="o">(</span><span class="s2">"Hello from the extension\n"</span><span class="o">)</span><span class="p">;</span>
 </pre></div>
 <p>Similar to <tt class="docutils literal">pdb</tt> we have a <tt class="docutils literal">backtrace</tt> command (or <tt class="docutils literal">bt</tt> shortcut) to inspect the call stack. Unlike pdb, this shows the call sequence tracing from the bottom up rather than the top down.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> run
 <span class="c1">#0  say_hello_and_return_none (self=0x7f4de7360230, args=0x7f4de7674250) at debugging_demo.c:7</span>
 <span class="c1">#1  0x0000558c96fed0cb in cfunction_call (func=0x7f4de73603b0, args=&lt;optimized out&gt;, kwargs=&lt;optimized out&gt;)</span>
-<span class="w">    </span>at<span class="w"> </span>Objects/methodobject.c:552
+    at Objects/methodobject.c:552
 <span class="c1">#2  0x0000558c96e0a1c3 in _PyObject_MakeTpCall (tstate=tstate@entry=0x558c97f030b0,</span>
-<span class="w">    </span><span class="nv">callable</span><span class="o">=</span>callable@entry<span class="o">=</span>0x7f4de73603b0,<span class="w"> </span><span class="nv">args</span><span class="o">=</span>args@entry<span class="o">=</span>0x7f4de76ea7c0,<span class="w"> </span><span class="nv">nargs</span><span class="o">=</span>&lt;optimized<span class="w"> </span>out&gt;,
-<span class="w">    </span><span class="nv">keywords</span><span class="o">=</span>keywords@entry<span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Objects/call.c:215
+    <span class="nv">callable</span><span class="o">=</span>callable@entry<span class="o">=</span>0x7f4de73603b0, <span class="nv">args</span><span class="o">=</span>args@entry<span class="o">=</span>0x7f4de76ea7c0, <span class="nv">nargs</span><span class="o">=</span>&lt;optimized out&gt;,
+    <span class="nv">keywords</span><span class="o">=</span>keywords@entry<span class="o">=</span>0x0<span class="o">)</span> at Objects/call.c:215
 <span class="c1">#3  0x0000558c96ec1baa in _PyObject_VectorcallTstate (tstate=0x558c97f030b0, callable=0x7f4de73603b0, args=0x7f4de76ea7c0,</span>
-<span class="w">    </span><span class="nv">nargsf</span><span class="o">=</span>&lt;optimized<span class="w"> </span>out&gt;,<span class="w"> </span><span class="nv">kwnames</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>./Include/cpython/abstract.h:112
+    <span class="nv">nargsf</span><span class="o">=</span>&lt;optimized out&gt;, <span class="nv">kwnames</span><span class="o">=</span>0x0<span class="o">)</span> at ./Include/cpython/abstract.h:112
 <span class="c1">#4  0x0000558c96ec6185 in PyObject_Vectorcall (kwnames=0x0, nargsf=9223372036854775808, args=0x7f4de76ea7c0,</span>
-<span class="w">    </span><span class="nv">callable</span><span class="o">=</span>0x7f4de73603b0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>./Include/cpython/abstract.h:123
+    <span class="nv">callable</span><span class="o">=</span>0x7f4de73603b0<span class="o">)</span> at ./Include/cpython/abstract.h:123
 <span class="c1">#5  call_function (tstate=tstate@entry=0x558c97f030b0, trace_info=trace_info@entry=0x7fffe84db900,</span>
-<span class="w">    </span><span class="nv">pp_stack</span><span class="o">=</span>pp_stack@entry<span class="o">=</span>0x7fffe84db8d0,<span class="w"> </span><span class="nv">oparg</span><span class="o">=</span>oparg@entry<span class="o">=</span><span class="m">0</span>,<span class="w"> </span><span class="nv">kwnames</span><span class="o">=</span>kwnames@entry<span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/ceval.c:5893
+    <span class="nv">pp_stack</span><span class="o">=</span>pp_stack@entry<span class="o">=</span>0x7fffe84db8d0, <span class="nv">oparg</span><span class="o">=</span>oparg@entry<span class="o">=</span><span class="m">0</span>, <span class="nv">kwnames</span><span class="o">=</span>kwnames@entry<span class="o">=</span>0x0<span class="o">)</span> at Python/ceval.c:5893
 <span class="c1">#6  0x0000558c96ed355e in _PyEval_EvalFrameDefault (tstate=0x558c97f030b0, f=0x7f4de76ea650, throwflag=&lt;optimized out&gt;)</span>
-<span class="w">    </span>at<span class="w"> </span>Python/ceval.c:4181
+    at Python/ceval.c:4181
 </pre></div>
 <p>Each frame is numbered on the left hand side from 0 (most-recent frame). You can use <tt class="docutils literal">up</tt> and <tt class="docutils literal">down</tt> to navigate the call stack, or you can use the <tt class="docutils literal">frame</tt> command / <tt class="docutils literal">f</tt> shortcut to jump to any particular frame.</p>
 <p>Let us go ahead and jump to frame number 2, which is in the cpython source code at <tt class="docutils literal">Objects/call.c</tt> on line 215. We can then use the <tt class="docutils literal">list</tt> / <tt class="docutils literal">l</tt> commands that pdb also has to look at that code.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>f<span class="w"> </span><span class="m">2</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> f <span class="m">2</span>
 <span class="c1">#2  0x0000558c96e0a1c3 in _PyObject_MakeTpCall (tstate=tstate@entry=0x558c97f030b0,</span>
-<span class="w">    </span><span class="nv">callable</span><span class="o">=</span>callable@entry<span class="o">=</span>0x7f4de73603b0,<span class="w"> </span><span class="nv">args</span><span class="o">=</span>args@entry<span class="o">=</span>0x7f4de76ea7c0,<span class="w"> </span><span class="nv">nargs</span><span class="o">=</span>&lt;optimized<span class="w"> </span>out&gt;,
-<span class="w">    </span><span class="nv">keywords</span><span class="o">=</span>keywords@entry<span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Objects/call.c:215
-<span class="m">215</span><span class="w">          </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>call<span class="o">(</span>callable,<span class="w"> </span>argstuple,<span class="w"> </span>kwdict<span class="o">)</span><span class="p">;</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>l
-<span class="m">210</span><span class="w">      </span><span class="o">}</span>
+    <span class="nv">callable</span><span class="o">=</span>callable@entry<span class="o">=</span>0x7f4de73603b0, <span class="nv">args</span><span class="o">=</span>args@entry<span class="o">=</span>0x7f4de76ea7c0, <span class="nv">nargs</span><span class="o">=</span>&lt;optimized out&gt;,
+    <span class="nv">keywords</span><span class="o">=</span>keywords@entry<span class="o">=</span>0x0<span class="o">)</span> at Objects/call.c:215
+<span class="m">215</span>          <span class="nv">result</span> <span class="o">=</span> call<span class="o">(</span>callable, argstuple, kwdict<span class="o">)</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> l
+<span class="m">210</span>      <span class="o">}</span>
 <span class="m">211</span>
-<span class="m">212</span><span class="w">      </span>PyObject<span class="w"> </span>*result<span class="w"> </span><span class="o">=</span><span class="w"> </span>NULL<span class="p">;</span>
-<span class="m">213</span><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>_Py_EnterRecursiveCall<span class="o">(</span>tstate,<span class="w"> </span><span class="s2">" while calling a Python object"</span><span class="o">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="m">0</span><span class="o">)</span>
-<span class="m">214</span><span class="w">      </span><span class="o">{</span>
-<span class="m">215</span><span class="w">          </span><span class="nv">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>call<span class="o">(</span>callable,<span class="w"> </span>argstuple,<span class="w"> </span>kwdict<span class="o">)</span><span class="p">;</span>
-<span class="m">216</span><span class="w">          </span>_Py_LeaveRecursiveCall<span class="o">(</span>tstate<span class="o">)</span><span class="p">;</span>
-<span class="m">217</span><span class="w">      </span><span class="o">}</span>
+<span class="m">212</span>      PyObject *result <span class="o">=</span> NULL<span class="p">;</span>
+<span class="m">213</span>      <span class="k">if</span> <span class="o">(</span>_Py_EnterRecursiveCall<span class="o">(</span>tstate, <span class="s2">" while calling a Python object"</span><span class="o">)</span> <span class="o">==</span> <span class="m">0</span><span class="o">)</span>
+<span class="m">214</span>      <span class="o">{</span>
+<span class="m">215</span>          <span class="nv">result</span> <span class="o">=</span> call<span class="o">(</span>callable, argstuple, kwdict<span class="o">)</span><span class="p">;</span>
+<span class="m">216</span>          _Py_LeaveRecursiveCall<span class="o">(</span>tstate<span class="o">)</span><span class="p">;</span>
+<span class="m">217</span>      <span class="o">}</span>
 <span class="m">218</span>
-<span class="m">219</span><span class="w">      </span>Py_DECREF<span class="o">(</span>argstuple<span class="o">)</span><span class="p">;</span>
+<span class="m">219</span>      Py_DECREF<span class="o">(</span>argstuple<span class="o">)</span><span class="p">;</span>
 </pre></div>
 <p>Let's do <tt class="docutils literal">f 0</tt> to get back to the most current frame. There you can use <tt class="docutils literal">next</tt> / <tt class="docutils literal">n</tt> to advance to the next line, and then <tt class="docutils literal">continue</tt> / <tt class="docutils literal">c</tt> to let the program continue.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>f<span class="w"> </span><span class="m">0</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> f <span class="m">0</span>
 <span class="c1">#0  say_hello_and_return_none (self=0x7f4de7360230, args=0x7f4de7674250) at debugging_demo.c:7</span>
-<span class="m">7</span><span class="w">      </span><span class="nb">printf</span><span class="w"> </span><span class="o">(</span><span class="s2">"Hello from the extension\n"</span><span class="o">)</span><span class="p">;</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>n
-Hello<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>extension
-<span class="m">8</span><span class="w">      </span>Py_RETURN_NONE<span class="p">;</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>c
+<span class="m">7</span>      <span class="nb">printf</span> <span class="o">(</span><span class="s2">"Hello from the extension\n"</span><span class="o">)</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> n
+Hello from the extension
+<span class="m">8</span>      Py_RETURN_NONE<span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> c
 Continuing.
 &gt;&gt;&gt;
 </pre></div>
 <p>At the very end we get back to our Python interpret. You can <tt class="docutils literal">quit()</tt> out of this to get back to gdb, and then <tt class="docutils literal">exit</tt> gdb to get back to the shell.</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>quit<span class="o">()</span>
-<span class="o">[</span>Inferior<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">(</span>process<span class="w"> </span><span class="m">57</span><span class="o">)</span><span class="w"> </span>exited<span class="w"> </span>normally<span class="o">]</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">exit</span>
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; quit<span class="o">()</span>
+<span class="o">[</span>Inferior <span class="m">1</span> <span class="o">(</span>process <span class="m">57</span><span class="o">)</span> exited normally<span class="o">]</span>
+<span class="o">(</span>gdb<span class="o">)</span> <span class="nb">exit</span>
 root@ba83cd50f6ec:/data#
 </pre></div>
 </div>
@@ -302,121 +302,121 @@ root@ba83cd50f6ec:/data#
 <h2 id="debugging-segmentation-faults">Debugging Segmentation Faults</h2>
 <p>Let's introduce an off-by-one programming error into our source code. We can create a new debugging_demo2.c file with similar but updated content:</p>
 <div class="highlight"><pre><span></span><span class="cp">#define PY_SSIZE_T_CLEAN</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#define NUM_WORDS 4</span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
-<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">words</span><span class="p">[</span><span class="n">NUM_WORDS</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="s">"Hello"</span><span class="p">,</span>
-<span class="w">    </span><span class="s">"from"</span><span class="p">,</span>
-<span class="w">    </span><span class="s">"the"</span><span class="p">,</span>
-<span class="w">    </span><span class="s">"extension"</span>
-<span class="w">  </span><span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">words</span><span class="p">[</span><span class="n">NUM_WORDS</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="s">"Hello"</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">"from"</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">"the"</span><span class="p">,</span><span class="w"></span>
+<span class="w">    </span><span class="s">"extension"</span><span class="w"></span>
+<span class="w">  </span><span class="p">};</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">NUM_WORDS</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">printf</span><span class="w"> </span><span class="p">(</span><span class="s">"%s "</span><span class="p">,</span><span class="w"> </span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">NUM_WORDS</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">printf</span><span class="w"> </span><span class="p">(</span><span class="s">"%s "</span><span class="p">,</span><span class="w"> </span><span class="n">words</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span>
-<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"</span><span class="se">\n</span><span class="s">"</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo2_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span>
-<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo2_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo2_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo2"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo2_methods</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo2_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo2"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo2_methods</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo2</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo2_module</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo2</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo2_module</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>Compile with <tt class="docutils literal">gcc <span class="pre">-g3</span> <span class="pre">-Wall</span> <span class="pre">-Werror</span> <span class="pre">-std=c17</span> <span class="pre">-shared</span> <span class="pre">-fPIC</span> <span class="pre">-I/usr/local/include/python3.10d</span> debugging_demo2.c <span class="pre">-o</span> debugging_demo2.so</tt>. A quick <tt class="docutils literal">python3 <span class="pre">-c</span> "import debugging_demo2; <span class="pre">debugging_demo2.say_hello_and_return_none()"</span></tt> this time will likely give you a segmentation fault, with no real error message.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import debugging_demo2; debugging_demo2.say_hello_and_return_none()"</span>
-Segmentation<span class="w"> </span>fault<span class="w"> </span><span class="o">(</span>core<span class="w"> </span>dumped<span class="o">)</span>
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# python3 -c <span class="s2">"import debugging_demo2; debugging_demo2.say_hello_and_return_none()"</span>
+Segmentation fault <span class="o">(</span>core dumped<span class="o">)</span>
 </pre></div>
 <p>Fortunately, gdb will automatically stop execution on a segfault and give you the ability to inspect your program. Let's start this program using the <tt class="docutils literal"><span class="pre">--args</span></tt> argument to gdb, which will allow us to forward arguments like <tt class="docutils literal"><span class="pre">-c</span> <span class="pre">"..."</span></tt> to the program gdb attaches to (here python3):</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>gdb<span class="w"> </span>--args<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import debugging_demo2; debugging_demo2.say_hello_and_return_none()"</span>
-GNU<span class="w"> </span>gdb<span class="w"> </span><span class="o">(</span>GDB<span class="o">)</span><span class="w"> </span><span class="m">12</span>.1
-Copyright<span class="w"> </span><span class="o">(</span>C<span class="o">)</span><span class="w"> </span><span class="m">2022</span><span class="w"> </span>Free<span class="w"> </span>Software<span class="w"> </span>Foundation,<span class="w"> </span>Inc.
-License<span class="w"> </span>GPLv3+:<span class="w"> </span>GNU<span class="w"> </span>GPL<span class="w"> </span>version<span class="w"> </span><span class="m">3</span><span class="w"> </span>or<span class="w"> </span>later<span class="w"> </span>&lt;http://gnu.org/licenses/gpl.html&gt;
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# gdb --args python3 -c <span class="s2">"import debugging_demo2; debugging_demo2.say_hello_and_return_none()"</span>
+GNU gdb <span class="o">(</span>GDB<span class="o">)</span> <span class="m">12</span>.1
+Copyright <span class="o">(</span>C<span class="o">)</span> <span class="m">2022</span> Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version <span class="m">3</span> or later &lt;http://gnu.org/licenses/gpl.html&gt;
 ...
-For<span class="w"> </span>help,<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s2">"help"</span>.
-Type<span class="w"> </span><span class="s2">"apropos word"</span><span class="w"> </span>to<span class="w"> </span>search<span class="w"> </span><span class="k">for</span><span class="w"> </span>commands<span class="w"> </span>related<span class="w"> </span>to<span class="w"> </span><span class="s2">"word"</span>...
-Reading<span class="w"> </span>symbols<span class="w"> </span>from<span class="w"> </span>python3...
+For help, <span class="nb">type</span> <span class="s2">"help"</span>.
+Type <span class="s2">"apropos word"</span> to search <span class="k">for</span> commands related to <span class="s2">"word"</span>...
+Reading symbols from python3...
 <span class="o">(</span>gdb<span class="o">)</span>
 </pre></div>
 <p>Enter <tt class="docutils literal">run</tt> and things will pause when the segmentation fault occurs:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3<span class="w"> </span>-c<span class="w"> </span>import<span class="se">\ </span>debugging_demo2<span class="se">\;\ </span>debugging_demo2.say_hello_and_return_none<span class="se">\(\)</span>
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> run
+Starting program: /usr/local/bin/python3 -c import<span class="se">\ </span>debugging_demo2<span class="se">\;\ </span>debugging_demo2.say_hello_and_return_none<span class="se">\(\)</span>
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
 
-Program<span class="w"> </span>received<span class="w"> </span>signal<span class="w"> </span>SIGSEGV,<span class="w"> </span>Segmentation<span class="w"> </span>fault.
-0x00007ffb409dc97d<span class="w"> </span><span class="k">in</span><span class="w"> </span>??<span class="w"> </span><span class="o">()</span><span class="w"> </span>from<span class="w"> </span>/lib/x86_64-linux-gnu/libc.so.6
+Program received signal SIGSEGV, Segmentation fault.
+0x00007ffb409dc97d <span class="k">in</span> ?? <span class="o">()</span> from /lib/x86_64-linux-gnu/libc.so.6
 <span class="o">(</span>gdb<span class="o">)</span>
 </pre></div>
 <p>If we inspect the backtrace, we will see that the first three frames are from <tt class="docutils literal"><span class="pre">/lib/x86_64-linux-gnu/libc.so.</span></tt>, which is the part of the standard library on GNU/Linux</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>bt
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> bt
 <span class="c1">#0  0x00007ffb409dc97d in ?? () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#1  0x00007ffb408b5db1 in ?? () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#2  0x00007ffb4089f81f in printf () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#3  0x00007ffb405b5245 in say_hello_and_return_none (self=0x7ffb4065dc10, args=0x7ffb406e4250) at debugging_demo.c:15</span>
 <span class="c1">#4  0x000055bed6af30cb in cfunction_call (func=0x7ffb406a2b10, args=&lt;optimized out&gt;, kwargs=&lt;optimized out&gt;)</span>
-<span class="w">    </span>at<span class="w"> </span>Objects/methodobject.c:552
+    at Objects/methodobject.c:552
 </pre></div>
 <p>In contrast to the last 2 frames, there is also barely any function information. This is because these libraries are heavily optimized without any debugging symbols (remember the <cite>-g3</cite> flag we using during compilation) so gdb can't do much besides tell us the memory location of the calls. If you ever try to debug a program and can't see the symbols you are looking for, keep this in mind.</p>
 <p>In any case, we are going to assume there is no bug in the standard library and jump back to <tt class="docutils literal">f 3</tt> to inspect our code. There a quick <tt class="docutils literal">info locals</tt> will tell us about the local variables.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>f<span class="w"> </span><span class="m">3</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> f <span class="m">3</span>
 <span class="c1">#3  0x00007ffb405b5245 in say_hello_and_return_none (self=0x7ffb4065dc10, args=0x7ffb406e4250) at debugging_demo.c:15</span>
-<span class="m">15</span><span class="w">       </span><span class="nb">printf</span><span class="w"> </span><span class="o">(</span><span class="s2">"%s "</span>,<span class="w"> </span>words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>info<span class="w"> </span>locals
-<span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span>
-<span class="nv">words</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span>0x7ffb405b6000<span class="w"> </span><span class="s2">"Hello"</span>,<span class="w"> </span>0x7ffb405b6006<span class="w"> </span><span class="s2">"from"</span>,<span class="w"> </span>0x7ffb405b600b<span class="w"> </span><span class="s2">"the"</span>,<span class="w"> </span>0x7ffb405b600f<span class="w"> </span><span class="s2">"extension"</span><span class="o">}</span>
+<span class="m">15</span>       <span class="nb">printf</span> <span class="o">(</span><span class="s2">"%s "</span>, words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
+<span class="o">(</span>gdb<span class="o">)</span> info locals
+<span class="nv">i</span> <span class="o">=</span> <span class="m">4</span>
+<span class="nv">words</span> <span class="o">=</span> <span class="o">{</span>0x7ffb405b6000 <span class="s2">"Hello"</span>, 0x7ffb405b6006 <span class="s2">"from"</span>, 0x7ffb405b600b <span class="s2">"the"</span>, 0x7ffb405b600f <span class="s2">"extension"</span><span class="o">}</span>
 </pre></div>
 <p>Since C is a 0-indexed language, the expression <tt class="docutils literal">words[i]</tt> tries to access memory that is out of bounds, which is the root cause of our segmentation fault:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>words<span class="o">[</span><span class="m">3</span><span class="o">]</span>
-<span class="nv">$1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x7ffb405b600f<span class="w"> </span><span class="s2">"extension"</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>words<span class="o">[</span>i<span class="o">]</span>
-<span class="nv">$2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x2e<span class="w"> </span>&lt;error:<span class="w"> </span>Cannot<span class="w"> </span>access<span class="w"> </span>memory<span class="w"> </span>at<span class="w"> </span>address<span class="w"> </span>0x2e&gt;
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> p words<span class="o">[</span><span class="m">3</span><span class="o">]</span>
+<span class="nv">$1</span> <span class="o">=</span> 0x7ffb405b600f <span class="s2">"extension"</span>
+<span class="o">(</span>gdb<span class="o">)</span> p words<span class="o">[</span>i<span class="o">]</span>
+<span class="nv">$2</span> <span class="o">=</span> 0x2e &lt;error: Cannot access memory at address 0x2e&gt;
 </pre></div>
 <p>A quick <tt class="docutils literal">l</tt> lists the code surrounding this function.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>l
-<span class="m">12</span><span class="w">       </span><span class="s2">"the"</span>,
-<span class="m">13</span><span class="w">       </span><span class="s2">"extension"</span>
-<span class="m">14</span><span class="w">     </span><span class="o">}</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> l
+<span class="m">12</span>       <span class="s2">"the"</span>,
+<span class="m">13</span>       <span class="s2">"extension"</span>
+<span class="m">14</span>     <span class="o">}</span><span class="p">;</span>
 <span class="m">15</span>
-<span class="m">16</span><span class="w">     </span><span class="k">for</span><span class="w"> </span><span class="o">(</span>int<span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>i<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>NUM_WORDS<span class="p">;</span><span class="w"> </span>i++<span class="o">)</span><span class="w"> </span><span class="o">{</span>
-<span class="m">17</span><span class="w">       </span><span class="nb">printf</span><span class="w"> </span><span class="o">(</span><span class="s2">"%s "</span>,<span class="w"> </span>words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
-<span class="m">18</span><span class="w">     </span><span class="o">}</span>
+<span class="m">16</span>     <span class="k">for</span> <span class="o">(</span>int <span class="nv">i</span> <span class="o">=</span> <span class="m">0</span><span class="p">;</span> i &lt;<span class="o">=</span> NUM_WORDS<span class="p">;</span> i++<span class="o">)</span> <span class="o">{</span>
+<span class="m">17</span>       <span class="nb">printf</span> <span class="o">(</span><span class="s2">"%s "</span>, words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
+<span class="m">18</span>     <span class="o">}</span>
 <span class="m">19</span>
-<span class="m">20</span><span class="w">     </span>printf<span class="o">(</span><span class="s2">"\n"</span><span class="o">)</span><span class="p">;</span>
-<span class="m">21</span><span class="w">     </span>Py_RETURN_NONE<span class="p">;</span>
+<span class="m">20</span>     printf<span class="o">(</span><span class="s2">"\n"</span><span class="o">)</span><span class="p">;</span>
+<span class="m">21</span>     Py_RETURN_NONE<span class="p">;</span>
 </pre></div>
 <p>The error is on line 14 and to have this program execute properly we would need to change <tt class="docutils literal">for (int i = 0; i &lt;= NUM_WORDS; <span class="pre">i++)</span></tt> to <tt class="docutils literal">for (int i = 0; i &lt;= NUM_WORDS; <span class="pre">i++)</span></tt>, keeping our array access in bounds.</p>
 <p>As an aside, if we had turned on optimization when compiling this via the <tt class="docutils literal"><span class="pre">-O2</span></tt> flag, gcc would have warned and then errored (as long as you use <tt class="docutils literal"><span class="pre">-Werror</span></tt>) up front. But that would have made debugging less fun.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>gcc<span class="w"> </span>-g3<span class="w"> </span>-O2<span class="w"> </span>-Wall<span class="w"> </span>-Werror<span class="w"> </span>-std<span class="o">=</span>c17<span class="w"> </span>-shared<span class="w"> </span>-fPIC<span class="w"> </span>-I/usr/local/include/python3.10d<span class="w"> </span>debugging_demo2.c<span class="w"> </span>-o<span class="w"> </span>debugging_demo2.so
-debugging_demo2.c:<span class="w"> </span>In<span class="w"> </span><span class="k">function</span><span class="w"> </span><span class="s1">'say_hello_and_return_none'</span>:
-debugging_demo2.c:17:5:<span class="w"> </span>error:<span class="w"> </span>iteration<span class="w"> </span><span class="m">4</span><span class="w"> </span>invokes<span class="w"> </span>undefined<span class="w"> </span>behavior<span class="w"> </span><span class="o">[</span>-Werror<span class="o">=</span>aggressive-loop-optimizations<span class="o">]</span>
-<span class="w">   </span><span class="m">17</span><span class="w"> </span><span class="p">|</span><span class="w">     </span><span class="nb">printf</span><span class="w"> </span><span class="o">(</span><span class="s2">"%s "</span>,<span class="w"> </span>words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
-<span class="w">      </span><span class="p">|</span><span class="w">     </span>^~~~~~~~~~~~~~~~~~~~~~~~
-debugging_demo2.c:16:21:<span class="w"> </span>note:<span class="w"> </span>within<span class="w"> </span>this<span class="w"> </span>loop
-<span class="w">   </span><span class="m">16</span><span class="w"> </span><span class="p">|</span><span class="w">   </span><span class="k">for</span><span class="w"> </span><span class="o">(</span>int<span class="w"> </span><span class="nv">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span><span class="p">;</span><span class="w"> </span>i<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>NUM_WORDS<span class="p">;</span><span class="w"> </span>i++<span class="o">)</span><span class="w"> </span><span class="o">{</span>
-<span class="w">      </span><span class="p">|</span><span class="w">                     </span>^
-cc1:<span class="w"> </span>all<span class="w"> </span>warnings<span class="w"> </span>being<span class="w"> </span>treated<span class="w"> </span>as<span class="w"> </span>errors
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# gcc -g3 -O2 -Wall -Werror -std<span class="o">=</span>c17 -shared -fPIC -I/usr/local/include/python3.10d debugging_demo2.c -o debugging_demo2.so
+debugging_demo2.c: In <span class="k">function</span> <span class="s1">'say_hello_and_return_none'</span>:
+debugging_demo2.c:17:5: error: iteration <span class="m">4</span> invokes undefined behavior <span class="o">[</span>-Werror<span class="o">=</span>aggressive-loop-optimizations<span class="o">]</span>
+   <span class="m">17</span> <span class="p">|</span>     <span class="nb">printf</span> <span class="o">(</span><span class="s2">"%s "</span>, words<span class="o">[</span>i<span class="o">])</span><span class="p">;</span>
+      <span class="p">|</span>     ^~~~~~~~~~~~~~~~~~~~~~~~
+debugging_demo2.c:16:21: note: within this loop
+   <span class="m">16</span> <span class="p">|</span>   <span class="k">for</span> <span class="o">(</span>int <span class="nv">i</span> <span class="o">=</span> <span class="m">0</span><span class="p">;</span> i &lt;<span class="o">=</span> NUM_WORDS<span class="p">;</span> i++<span class="o">)</span> <span class="o">{</span>
+      <span class="p">|</span>                     ^
+cc1: all warnings being treated as errors
 </pre></div>
 </div>
 <div class="section" id="debugging-python-c-data-exchange">
@@ -424,430 +424,430 @@ cc1:<span class="w"> </span>all<span class="w"> </span>warnings<span class="w"> 
 <p>CPython distributes a <a class="reference external" href="https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python">gdb python extension</a> that bridges the gap between what you as a Python developer see at runtime versus what gdb knows about the objects it sees at a lower level. This extension is housed in the <a class="reference external" href="https://github.com/python/cpython/blob/main/Tools/gdb/libpython.py">CPython source code</a>, which we also have hanging around at <tt class="docutils literal">/clones</tt> in our Docker image.</p>
 <p>Let's continue expanding on our previous extension, this time naming it <tt class="docutils literal">debugging_demo3.c</tt>. Rather than being self contained, the new extension will print whatever name you pass to it through the Python interpreter. Our initial structure looks like this:</p>
 <div class="highlight"><pre><span></span><span class="cp">#define PY_SSIZE_T_CLEAN</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#define NUM_WORDS 4</span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
-<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
-<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span>
-<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span>
-<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>We need to build this extension just as we have done before, this time using <tt class="docutils literal">gcc <span class="pre">-g3</span> <span class="pre">-Wall</span> <span class="pre">-Werror</span> <span class="pre">-std=c17</span> <span class="pre">-shared</span> <span class="pre">-fPIC</span> <span class="pre">-I/usr/local/include/python3.10d</span> debugging_demo3.c <span class="pre">-o</span> debugging_demo3.so</tt>.</p>
 <p>If you look closely at the source code above we have introduced <a class="reference external" href="https://docs.python.org/3/c-api/arg.html">PyArg_ParseTuple</a>, which handles unpacking function arguments into local variables. Our function takes 1 and only 1 argument in its current form; attempting to call it with anything else will set the global Python error indicator, hit the <tt class="docutils literal">return NULL;</tt> statement, and propagate the error back to the Python runtime. That's a lot of power packed into a few lines of code.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>python3
-Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
-Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
-&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_demo3
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span><span class="o">)</span>
-Hello,<span class="w"> </span>Will
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">()</span>
-Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
-TypeError:<span class="w"> </span><span class="k">function</span><span class="w"> </span>takes<span class="w"> </span>exactly<span class="w"> </span><span class="m">1</span><span class="w"> </span>argument<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="w"> </span>given<span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span>,<span class="w"> </span><span class="s2">"Ayd"</span><span class="o">)</span>
-Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
-TypeError:<span class="w"> </span><span class="k">function</span><span class="w"> </span>takes<span class="w"> </span>exactly<span class="w"> </span><span class="m">1</span><span class="w"> </span>argument<span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="w"> </span>given<span class="o">)</span>
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# python3
+Python <span class="m">3</span>.10.10+ <span class="o">(</span>heads/3.10:bac3fe7, Feb <span class="m">22</span> <span class="m">2023</span>, <span class="m">05</span>:56:35<span class="o">)</span> <span class="o">[</span>GCC <span class="m">11</span>.3.0<span class="o">]</span> on linux
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for</span> more information.
+&gt;&gt;&gt; import debugging_demo3
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span><span class="o">)</span>
+Hello, Will
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">()</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
+TypeError: <span class="k">function</span> takes exactly <span class="m">1</span> argument <span class="o">(</span><span class="m">0</span> given<span class="o">)</span>
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span>, <span class="s2">"Ayd"</span><span class="o">)</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
+TypeError: <span class="k">function</span> takes exactly <span class="m">1</span> argument <span class="o">(</span><span class="m">2</span> given<span class="o">)</span>
 </pre></div>
 <p>Things work great until you try passing through something that is not a unicode object.</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="m">555</span><span class="o">)</span>
-Hello,<span class="w"> </span><span class="o">(</span>null<span class="o">)</span>
-Fatal<span class="w"> </span>Python<span class="w"> </span>error:<span class="w"> </span>_Py_CheckFunctionResult:<span class="w"> </span>a<span class="w"> </span><span class="k">function</span><span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
-Python<span class="w"> </span>runtime<span class="w"> </span>state:<span class="w"> </span>initialized
-TypeError:<span class="w"> </span>bad<span class="w"> </span>argument<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>built-in<span class="w"> </span>operation
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="m">555</span><span class="o">)</span>
+Hello, <span class="o">(</span>null<span class="o">)</span>
+Fatal Python error: _Py_CheckFunctionResult: a <span class="k">function</span> returned a result with an exception <span class="nb">set</span>
+Python runtime state: initialized
+TypeError: bad argument <span class="nb">type</span> <span class="k">for</span> built-in operation
 
-The<span class="w"> </span>above<span class="w"> </span>exception<span class="w"> </span>was<span class="w"> </span>the<span class="w"> </span>direct<span class="w"> </span>cause<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>exception:
+The above exception was the direct cause of the following exception:
 
-SystemError:<span class="w"> </span>&lt;built-in<span class="w"> </span><span class="k">function</span><span class="w"> </span>say_hello_and_return_none&gt;<span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
+SystemError: &lt;built-in <span class="k">function</span> say_hello_and_return_none&gt; returned a result with an exception <span class="nb">set</span>
 
-Current<span class="w"> </span>thread<span class="w"> </span>0x00007f5dd4cbb740<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>first<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+Current thread 0x00007f5dd4cbb740 <span class="o">(</span>most recent call first<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span> <span class="k">in</span> &lt;module&gt;
 
-Extension<span class="w"> </span>modules:<span class="w"> </span>debugging_demo3<span class="w"> </span><span class="o">(</span>total:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
-Aborted<span class="w"> </span><span class="o">(</span>core<span class="w"> </span>dumped<span class="o">)</span>
+Extension modules: debugging_demo3 <span class="o">(</span>total: <span class="m">1</span><span class="o">)</span>
+Aborted <span class="o">(</span>core dumped<span class="o">)</span>
 </pre></div>
 <p>This time the program aborted instead of having a segmentation fault. That said, gdb will still allow you to jump in and inspect the state of things prior to termination.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>gdb<span class="w"> </span>--args<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
-Reading<span class="w"> </span>symbols<span class="w"> </span>from<span class="w"> </span>python3...
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3<span class="w"> </span>-c<span class="w"> </span>import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
-Hello,<span class="w"> </span><span class="o">(</span>null<span class="o">)</span>
-Fatal<span class="w"> </span>Python<span class="w"> </span>error:<span class="w"> </span>_Py_CheckFunctionResult:<span class="w"> </span>a<span class="w"> </span><span class="k">function</span><span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
-Python<span class="w"> </span>runtime<span class="w"> </span>state:<span class="w"> </span>initialized
-TypeError:<span class="w"> </span>bad<span class="w"> </span>argument<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>built-in<span class="w"> </span>operation
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# gdb --args python3 -c <span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
+Reading symbols from python3...
+<span class="o">(</span>gdb<span class="o">)</span> run
+Starting program: /usr/local/bin/python3 -c import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+Hello, <span class="o">(</span>null<span class="o">)</span>
+Fatal Python error: _Py_CheckFunctionResult: a <span class="k">function</span> returned a result with an exception <span class="nb">set</span>
+Python runtime state: initialized
+TypeError: bad argument <span class="nb">type</span> <span class="k">for</span> built-in operation
 
-The<span class="w"> </span>above<span class="w"> </span>exception<span class="w"> </span>was<span class="w"> </span>the<span class="w"> </span>direct<span class="w"> </span>cause<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>exception:
+The above exception was the direct cause of the following exception:
 
-SystemError:<span class="w"> </span>&lt;built-in<span class="w"> </span><span class="k">function</span><span class="w"> </span>say_hello_and_return_none&gt;<span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
+SystemError: &lt;built-in <span class="k">function</span> say_hello_and_return_none&gt; returned a result with an exception <span class="nb">set</span>
 
-Current<span class="w"> </span>thread<span class="w"> </span>0x00007f9b27e91740<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>first<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;string&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+Current thread 0x00007f9b27e91740 <span class="o">(</span>most recent call first<span class="o">)</span>:
+  File <span class="s2">"&lt;string&gt;"</span>, line <span class="m">1</span> <span class="k">in</span> &lt;module&gt;
 
-Extension<span class="w"> </span>modules:<span class="w"> </span>debugging_demo3<span class="w"> </span><span class="o">(</span>total:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+Extension modules: debugging_demo3 <span class="o">(</span>total: <span class="m">1</span><span class="o">)</span>
 
-Program<span class="w"> </span>received<span class="w"> </span>signal<span class="w"> </span>SIGABRT,<span class="w"> </span>Aborted.
-0x00007f9b27f2aa7c<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread_kill<span class="w"> </span><span class="o">()</span><span class="w"> </span>from<span class="w"> </span>/lib/x86_64-linux-gnu/libc.so.6
+Program received signal SIGABRT, Aborted.
+0x00007f9b27f2aa7c <span class="k">in</span> pthread_kill <span class="o">()</span> from /lib/x86_64-linux-gnu/libc.so.6
 </pre></div>
 <p>When you look at the backtrace here, you won't see any of our user code:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>bt
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> bt
 <span class="c1">#0  0x00007f9b27f2aa7c in pthread_kill () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#1  0x00007f9b27ed6476 in raise () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#2  0x00007f9b27ebc7f3 in abort () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#3  0x0000555c45a8505b in fatal_error_exit (status=&lt;optimized out&gt;) at Python/pylifecycle.c:2553</span>
 <span class="c1">#4  0x0000555c45a895c7 in fatal_error (fd=2, header=header@entry=1,</span>
-<span class="w">    </span><span class="nv">prefix</span><span class="o">=</span>prefix@entry<span class="o">=</span>0x555c45c08a60<span class="w"> </span>&lt;__func__.18&gt;<span class="w"> </span><span class="s2">"_Py_CheckFunctionResult"</span>,
-<span class="w">    </span><span class="nv">msg</span><span class="o">=</span>msg@entry<span class="o">=</span>0x555c45c08528<span class="w"> </span><span class="s2">"a function returned a result with an exception set"</span>,<span class="w"> </span><span class="nv">status</span><span class="o">=</span>status@entry<span class="o">=</span>-1<span class="o">)</span>
-<span class="w">    </span>at<span class="w"> </span>Python/pylifecycle.c:2734
+    <span class="nv">prefix</span><span class="o">=</span>prefix@entry<span class="o">=</span>0x555c45c08a60 &lt;__func__.18&gt; <span class="s2">"_Py_CheckFunctionResult"</span>,
+    <span class="nv">msg</span><span class="o">=</span>msg@entry<span class="o">=</span>0x555c45c08528 <span class="s2">"a function returned a result with an exception set"</span>, <span class="nv">status</span><span class="o">=</span>status@entry<span class="o">=</span>-1<span class="o">)</span>
+    at Python/pylifecycle.c:2734
 <span class="c1">#5  0x0000555c45a89630 in _Py_FatalErrorFunc (func=func@entry=0x555c45c08a60 &lt;__func__.18&gt; "_Py_CheckFunctionResult",</span>
 </pre></div>
 <p>This is a bit unfortunate because we can't directly trace back to our function. With that said, the message <tt class="docutils literal">a function returned a result with an exception set</tt> clues us in on where we need to look. CPython manages one global error indicator queryable via <a class="reference external" href="https://docs.python.org/3/c-api/exceptions.html">PyErr_Occurred()</a>.</p>
 <p>To do this, let's set a <tt class="docutils literal">break say_hello_and_return_none</tt> to pause execution when we enter our function.  Then <tt class="docutils literal">run</tt> to get to that point and add a <tt class="docutils literal">watch PyErr_Occurred()</tt> to the mix.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>say_hello_and_return_none
-Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>0x7f0a8fbf5200:<span class="w"> </span>file<span class="w"> </span>debugging_demo3.c,<span class="w"> </span>line<span class="w"> </span><span class="m">8</span>.
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-The<span class="w"> </span>program<span class="w"> </span>being<span class="w"> </span>debugged<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>started<span class="w"> </span>already.
-Start<span class="w"> </span>it<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>beginning?<span class="w"> </span><span class="o">(</span>y<span class="w"> </span>or<span class="w"> </span>n<span class="o">)</span><span class="w"> </span>y
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3<span class="w"> </span>-c<span class="w"> </span>import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">break</span> say_hello_and_return_none
+Breakpoint <span class="m">1</span> at 0x7f0a8fbf5200: file debugging_demo3.c, line <span class="m">8</span>.
+<span class="o">(</span>gdb<span class="o">)</span> run
+The program being debugged has been started already.
+Start it from the beginning? <span class="o">(</span>y or n<span class="o">)</span> y
+Starting program: /usr/local/bin/python3 -c import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
 
-Breakpoint<span class="w"> </span><span class="m">1</span>,<span class="w"> </span>say_hello_and_return_none<span class="w"> </span><span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f58e60305f0,<span class="w"> </span><span class="nv">args</span><span class="o">=</span>0x7f58e5fe98b0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_demo3.c:8
-<span class="m">8</span><span class="w">    </span><span class="o">{</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>watch<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
-Watchpoint<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
+Breakpoint <span class="m">1</span>, say_hello_and_return_none <span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f58e60305f0, <span class="nv">args</span><span class="o">=</span>0x7f58e5fe98b0<span class="o">)</span> at debugging_demo3.c:8
+<span class="m">8</span>    <span class="o">{</span>
+<span class="o">(</span>gdb<span class="o">)</span> watch PyErr_Occurred<span class="o">()</span>
+Watchpoint <span class="m">2</span>: PyErr_Occurred<span class="o">()</span>
 </pre></div>
 <p>At this point <tt class="docutils literal">info break</tt> should show us the two conditions under which gdb will pause, either on <tt class="docutils literal">say_hello_and_return_none</tt> entry or when the <tt class="docutils literal">PyErr_Occurred()</tt> value changes.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>info<span class="w"> </span><span class="nb">break</span>
-Num<span class="w">     </span>Type<span class="w">           </span>Disp<span class="w"> </span>Enb<span class="w"> </span>Address<span class="w">            </span>What
-<span class="m">1</span><span class="w">       </span>breakpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">   </span>0x00007f58e5f87200<span class="w"> </span><span class="k">in</span><span class="w"> </span>say_hello_and_return_none<span class="w"> </span>at<span class="w"> </span>debugging_demo3.c:8
-<span class="w">     </span>breakpoint<span class="w"> </span>already<span class="w"> </span>hit<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nb">time</span>
-<span class="m">2</span><span class="w">       </span>watchpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">                      </span>PyErr_Occurred<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> info <span class="nb">break</span>
+Num     Type           Disp Enb Address            What
+<span class="m">1</span>       breakpoint     keep y   0x00007f58e5f87200 <span class="k">in</span> say_hello_and_return_none at debugging_demo3.c:8
+     breakpoint already hit <span class="m">1</span> <span class="nb">time</span>
+<span class="m">2</span>       watchpoint     keep y                      PyErr_Occurred<span class="o">()</span>
 </pre></div>
 <p>Type <tt class="docutils literal">c</tt> to continue along and you will see that the watchpoint gets hit:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>c
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> c
 Continuing.
 
-Watchpoint<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
+Watchpoint <span class="m">2</span>: PyErr_Occurred<span class="o">()</span>
 
-Old<span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x0
-New<span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;
-_PyErr_Restore<span class="w"> </span><span class="o">(</span><span class="nv">tstate</span><span class="o">=</span>tstate@entry<span class="o">=</span>0x55ccfcb82930,<span class="w"> </span><span class="nv">type</span><span class="o">=</span>type@entry<span class="o">=</span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;,<span class="w"> </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640,<span class="w"> </span><span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:60
-<span class="m">60</span><span class="w">       </span>tstate-&gt;curexc_value<span class="w"> </span><span class="o">=</span><span class="w"> </span>value<span class="p">;</span>
+Old <span class="nv">value</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x0
+New <span class="nv">value</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;
+_PyErr_Restore <span class="o">(</span><span class="nv">tstate</span><span class="o">=</span>tstate@entry<span class="o">=</span>0x55ccfcb82930, <span class="nv">type</span><span class="o">=</span>type@entry<span class="o">=</span>0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;, <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640, <span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span> at Python/errors.c:60
+<span class="m">60</span>       tstate-&gt;curexc_value <span class="o">=</span> value<span class="p">;</span>
 </pre></div>
 <p>The watchpoint wasn't hit within our code, but internal to CPython. No matter - we can inspect the backtrace and see what point in our code base this might happen at.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>bt
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> bt
 <span class="c1">#0  _PyErr_Restore (tstate=tstate@entry=0x55ccfcb82930, type=type@entry=0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;,</span>
-<span class="w">    </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640,<span class="w"> </span><span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:60
+    <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640, <span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span> at Python/errors.c:60
 <span class="c1">#1  0x000055ccfb455d60 in _PyErr_SetObject (tstate=tstate@entry=0x55ccfcb82930,</span>
-<span class="w">    </span><span class="nv">exception</span><span class="o">=</span>exception@entry<span class="o">=</span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;,<span class="w"> </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:189
+    <span class="nv">exception</span><span class="o">=</span>exception@entry<span class="o">=</span>0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;, <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640<span class="o">)</span> at Python/errors.c:189
 <span class="c1">#2  0x000055ccfb455f59 in _PyErr_SetString (tstate=0x55ccfcb82930, exception=0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;,</span>
-<span class="w">    </span><span class="nv">string</span><span class="o">=</span>string@entry<span class="o">=</span>0x55ccfb645698<span class="w"> </span><span class="s2">"bad argument type for built-in operation"</span><span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:235
+    <span class="nv">string</span><span class="o">=</span>string@entry<span class="o">=</span>0x55ccfb645698 <span class="s2">"bad argument type for built-in operation"</span><span class="o">)</span> at Python/errors.c:235
 <span class="c1">#3  0x000055ccfb455fdd in PyErr_BadArgument () at Python/errors.c:667</span>
 <span class="c1">#4  0x000055ccfb402060 in PyUnicode_AsUTF8AndSize (unicode=&lt;optimized out&gt;, psize=psize@entry=0x0)</span>
-<span class="w">    </span>at<span class="w"> </span>Objects/unicodeobject.c:4245
+    at Objects/unicodeobject.c:4245
 <span class="c1">#5  0x000055ccfb402195 in PyUnicode_AsUTF8 (unicode=&lt;optimized out&gt;) at Objects/unicodeobject.c:4265</span>
 <span class="c1">#6  0x00007f58e5f87245 in say_hello_and_return_none (self=0x7f58e60305f0, args=0x7f58e5fe98b0) at debugging_demo3.c:14</span>
 </pre></div>
 <p>Frame 6 is <tt class="docutils literal">say_hello_and_return_none</tt>, specifically on line 14. You can jump back to that and see the line being called.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>f<span class="w"> </span><span class="m">6</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> f <span class="m">6</span>
 <span class="c1">#6  0x00007f58e5f87245 in say_hello_and_return_none (self=0x7f58e60305f0, args=0x7f58e5fe98b0) at debugging_demo3.c:14</span>
-<span class="m">14</span><span class="w">     </span>const<span class="w"> </span>char<span class="w"> </span>*str<span class="w"> </span><span class="o">=</span><span class="w"> </span>PyUnicode_AsUTF8<span class="o">(</span>name<span class="o">)</span><span class="p">;</span>
+<span class="m">14</span>     const char *str <span class="o">=</span> PyUnicode_AsUTF8<span class="o">(</span>name<span class="o">)</span><span class="p">;</span>
 </pre></div>
 <p>We know from our function invocation that we are passed the value <tt class="docutils literal">555</tt> as an argument to the function call. However, you wouldn't know this by trying to print the object in gdb.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>name
-<span class="nv">$1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x7f58e6013bc0
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>*name
-<span class="nv">$2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="nv">ob_refcnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span>,<span class="w"> </span><span class="nv">ob_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x55ccfb73f180<span class="w"> </span>&lt;PyLong_Type&gt;<span class="o">}</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> p name
+<span class="nv">$1</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x7f58e6013bc0
+<span class="o">(</span>gdb<span class="o">)</span> p *name
+<span class="nv">$2</span> <span class="o">=</span> <span class="o">{</span><span class="nv">ob_refcnt</span> <span class="o">=</span> <span class="m">4</span>, <span class="nv">ob_type</span> <span class="o">=</span> 0x55ccfb73f180 &lt;PyLong_Type&gt;<span class="o">}</span>
 </pre></div>
 <p>We get <em>some</em> information when dereferencing this object about the basic <tt class="docutils literal">PyObject</tt> struct members. But we'd have to muck around a bit more to see the members that are relevant to longs, or whatever object type it is we inspect.</p>
 <p><em>This</em> is where the gdb extension becomes a really powerful abstraction tool. First, we need to load the extension into gdb. This can be done at runtime with the <tt class="docutils literal">source</tt> command pointing to the extension file. In our docker image, this would mean</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/clones/cpython/Tools/gdb/libpython.py
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">source</span> /clones/cpython/Tools/gdb/libpython.py
 </pre></div>
 <p>Once you have loaded the extension, the default printing mechanism becomes a lot more familiar to Python users.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>name
-<span class="nv">$3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">555</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> p name
+<span class="nv">$3</span> <span class="o">=</span> <span class="m">555</span>
 </pre></div>
 <p>This confirms that the object we have on this line is the same we provided to the function call, so nothing way out of the ordinary is going on. Since the global <tt class="docutils literal">PyErr_Occurred()</tt> indicator was set, we can use <tt class="docutils literal">PyErr_Print()</tt> to get information from the Python runtime about what went wrong. Note that calling this <em>clears</em> the error indicator.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>call<span class="w"> </span>PyErr_PrintEx<span class="o">(</span><span class="m">0</span><span class="o">)</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> call PyErr_PrintEx<span class="o">(</span><span class="m">0</span><span class="o">)</span>
 TypeError
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
-<span class="nv">$4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x0
+<span class="o">(</span>gdb<span class="o">)</span> p PyErr_Occurred<span class="o">()</span>
+<span class="nv">$4</span> <span class="o">=</span> 0x0
 </pre></div>
 <p>We called <tt class="docutils literal">PyUnicode_AsUTF8</tt> with a <tt class="docutils literal">PyLong</tt> object even though it expected <tt class="docutils literal">PyUnicode</tt>. In the Python runtime this would automatically trigger an exception and stop things immediately. C doesn't have built-in error handling, so things continue unless you explicitly handle the issue.</p>
 <p>Following the pattern of <a class="reference external" href="https://docs.python.org/3/c-api/exceptions.htmlpyerr">CPython Exception Handling</a>, we are going to slightly modify our source code to look like this:</p>
 <div class="highlight"><pre><span></span><span class="cp">#define PY_SSIZE_T_CLEAN</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#define NUM_WORDS 4</span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
-<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span>
-<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span>
-<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>The <tt class="docutils literal">if (str == NULL)</tt> is our way of handling a failed <tt class="docutils literal">PyUnicode_AsUTF8</tt> call. By propagating that <tt class="docutils literal">NULL</tt> value up the call stack, CPython will gracefully handle the error for us when we get back to the Python runtime. To confirm, recompile with <tt class="docutils literal">gcc <span class="pre">-g3</span> <span class="pre">-Wall</span> <span class="pre">-Werror</span> <span class="pre">-std=c17</span> <span class="pre">-shared</span> <span class="pre">-fPIC</span> <span class="pre">-I/usr/local/include/python3.10d</span> debugging_demo3.c <span class="pre">-o</span> debugging_demo3.so</tt>.</p>
 <p>If you look closely at the source code above we have introduced <a class="reference external" href="https://docs.python.org/3/c-api/arg.html">PyArg_ParseTuple</a>, which handles unpacking function arguments into local variables. Our function takes 1 and only 1 argument in its current form; attempting to call it with anything else will set the global Python error indicator, hit the <tt class="docutils literal">return NULL;</tt> statement, and propagate the error back to the Python runtime. That's a lot of power packed into a few lines of code.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>python3
-Python<span class="w"> </span><span class="m">3</span>.10.10+<span class="w"> </span><span class="o">(</span>heads/3.10:bac3fe7,<span class="w"> </span>Feb<span class="w"> </span><span class="m">22</span><span class="w"> </span><span class="m">2023</span>,<span class="w"> </span><span class="m">05</span>:56:35<span class="o">)</span><span class="w"> </span><span class="o">[</span>GCC<span class="w"> </span><span class="m">11</span>.3.0<span class="o">]</span><span class="w"> </span>on<span class="w"> </span>linux
-Type<span class="w"> </span><span class="s2">"help"</span>,<span class="w"> </span><span class="s2">"copyright"</span>,<span class="w"> </span><span class="s2">"credits"</span><span class="w"> </span>or<span class="w"> </span><span class="s2">"license"</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>more<span class="w"> </span>information.
-&gt;&gt;&gt;<span class="w"> </span>import<span class="w"> </span>debugging_demo3
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span><span class="o">)</span>
-Hello,<span class="w"> </span>Will
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">()</span>
-Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
-TypeError:<span class="w"> </span><span class="k">function</span><span class="w"> </span>takes<span class="w"> </span>exactly<span class="w"> </span><span class="m">1</span><span class="w"> </span>argument<span class="w"> </span><span class="o">(</span><span class="m">0</span><span class="w"> </span>given<span class="o">)</span>
-&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span>,<span class="w"> </span><span class="s2">"Ayd"</span><span class="o">)</span>
-Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
-TypeError:<span class="w"> </span><span class="k">function</span><span class="w"> </span>takes<span class="w"> </span>exactly<span class="w"> </span><span class="m">1</span><span class="w"> </span>argument<span class="w"> </span><span class="o">(</span><span class="m">2</span><span class="w"> </span>given<span class="o">)</span>
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# python3
+Python <span class="m">3</span>.10.10+ <span class="o">(</span>heads/3.10:bac3fe7, Feb <span class="m">22</span> <span class="m">2023</span>, <span class="m">05</span>:56:35<span class="o">)</span> <span class="o">[</span>GCC <span class="m">11</span>.3.0<span class="o">]</span> on linux
+Type <span class="s2">"help"</span>, <span class="s2">"copyright"</span>, <span class="s2">"credits"</span> or <span class="s2">"license"</span> <span class="k">for</span> more information.
+&gt;&gt;&gt; import debugging_demo3
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span><span class="o">)</span>
+Hello, Will
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">()</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
+TypeError: <span class="k">function</span> takes exactly <span class="m">1</span> argument <span class="o">(</span><span class="m">0</span> given<span class="o">)</span>
+&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="s2">"Will"</span>, <span class="s2">"Ayd"</span><span class="o">)</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
+TypeError: <span class="k">function</span> takes exactly <span class="m">1</span> argument <span class="o">(</span><span class="m">2</span> given<span class="o">)</span>
 </pre></div>
 <p>Things work great until you try passing through something that is not a unicode object.</p>
-<div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="m">555</span><span class="o">)</span>
-Hello,<span class="w"> </span><span class="o">(</span>null<span class="o">)</span>
-Fatal<span class="w"> </span>Python<span class="w"> </span>error:<span class="w"> </span>_Py_CheckFunctionResult:<span class="w"> </span>a<span class="w"> </span><span class="k">function</span><span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
-Python<span class="w"> </span>runtime<span class="w"> </span>state:<span class="w"> </span>initialized
-TypeError:<span class="w"> </span>bad<span class="w"> </span>argument<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>built-in<span class="w"> </span>operation
+<div class="highlight"><pre><span></span>&gt;&gt;&gt; debugging_demo3.say_hello_and_return_none<span class="o">(</span><span class="m">555</span><span class="o">)</span>
+Hello, <span class="o">(</span>null<span class="o">)</span>
+Fatal Python error: _Py_CheckFunctionResult: a <span class="k">function</span> returned a result with an exception <span class="nb">set</span>
+Python runtime state: initialized
+TypeError: bad argument <span class="nb">type</span> <span class="k">for</span> built-in operation
 
-The<span class="w"> </span>above<span class="w"> </span>exception<span class="w"> </span>was<span class="w"> </span>the<span class="w"> </span>direct<span class="w"> </span>cause<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>exception:
+The above exception was the direct cause of the following exception:
 
-SystemError:<span class="w"> </span>&lt;built-in<span class="w"> </span><span class="k">function</span><span class="w"> </span>say_hello_and_return_none&gt;<span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
+SystemError: &lt;built-in <span class="k">function</span> say_hello_and_return_none&gt; returned a result with an exception <span class="nb">set</span>
 
-Current<span class="w"> </span>thread<span class="w"> </span>0x00007f5dd4cbb740<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>first<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;stdin&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+Current thread 0x00007f5dd4cbb740 <span class="o">(</span>most recent call first<span class="o">)</span>:
+  File <span class="s2">"&lt;stdin&gt;"</span>, line <span class="m">1</span> <span class="k">in</span> &lt;module&gt;
 
-Extension<span class="w"> </span>modules:<span class="w"> </span>debugging_demo3<span class="w"> </span><span class="o">(</span>total:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
-Aborted<span class="w"> </span><span class="o">(</span>core<span class="w"> </span>dumped<span class="o">)</span>
+Extension modules: debugging_demo3 <span class="o">(</span>total: <span class="m">1</span><span class="o">)</span>
+Aborted <span class="o">(</span>core dumped<span class="o">)</span>
 </pre></div>
 <p>This time the program aborted instead of having a segmentation fault. That said, gdb will still allow you to jump in and inspect the state of things prior to termination.</p>
-<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data#<span class="w"> </span>gdb<span class="w"> </span>--args<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
-Reading<span class="w"> </span>symbols<span class="w"> </span>from<span class="w"> </span>python3...
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3<span class="w"> </span>-c<span class="w"> </span>import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
-Hello,<span class="w"> </span><span class="o">(</span>null<span class="o">)</span>
-Fatal<span class="w"> </span>Python<span class="w"> </span>error:<span class="w"> </span>_Py_CheckFunctionResult:<span class="w"> </span>a<span class="w"> </span><span class="k">function</span><span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
-Python<span class="w"> </span>runtime<span class="w"> </span>state:<span class="w"> </span>initialized
-TypeError:<span class="w"> </span>bad<span class="w"> </span>argument<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>built-in<span class="w"> </span>operation
+<div class="highlight"><pre><span></span>root@ba83cd50f6ec:/data# gdb --args python3 -c <span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
+Reading symbols from python3...
+<span class="o">(</span>gdb<span class="o">)</span> run
+Starting program: /usr/local/bin/python3 -c import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+Hello, <span class="o">(</span>null<span class="o">)</span>
+Fatal Python error: _Py_CheckFunctionResult: a <span class="k">function</span> returned a result with an exception <span class="nb">set</span>
+Python runtime state: initialized
+TypeError: bad argument <span class="nb">type</span> <span class="k">for</span> built-in operation
 
-The<span class="w"> </span>above<span class="w"> </span>exception<span class="w"> </span>was<span class="w"> </span>the<span class="w"> </span>direct<span class="w"> </span>cause<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>following<span class="w"> </span>exception:
+The above exception was the direct cause of the following exception:
 
-SystemError:<span class="w"> </span>&lt;built-in<span class="w"> </span><span class="k">function</span><span class="w"> </span>say_hello_and_return_none&gt;<span class="w"> </span>returned<span class="w"> </span>a<span class="w"> </span>result<span class="w"> </span>with<span class="w"> </span>an<span class="w"> </span>exception<span class="w"> </span><span class="nb">set</span>
+SystemError: &lt;built-in <span class="k">function</span> say_hello_and_return_none&gt; returned a result with an exception <span class="nb">set</span>
 
-Current<span class="w"> </span>thread<span class="w"> </span>0x00007f9b27e91740<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>first<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;string&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+Current thread 0x00007f9b27e91740 <span class="o">(</span>most recent call first<span class="o">)</span>:
+  File <span class="s2">"&lt;string&gt;"</span>, line <span class="m">1</span> <span class="k">in</span> &lt;module&gt;
 
-Extension<span class="w"> </span>modules:<span class="w"> </span>debugging_demo3<span class="w"> </span><span class="o">(</span>total:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+Extension modules: debugging_demo3 <span class="o">(</span>total: <span class="m">1</span><span class="o">)</span>
 
-Program<span class="w"> </span>received<span class="w"> </span>signal<span class="w"> </span>SIGABRT,<span class="w"> </span>Aborted.
-0x00007f9b27f2aa7c<span class="w"> </span><span class="k">in</span><span class="w"> </span>pthread_kill<span class="w"> </span><span class="o">()</span><span class="w"> </span>from<span class="w"> </span>/lib/x86_64-linux-gnu/libc.so.6
+Program received signal SIGABRT, Aborted.
+0x00007f9b27f2aa7c <span class="k">in</span> pthread_kill <span class="o">()</span> from /lib/x86_64-linux-gnu/libc.so.6
 </pre></div>
 <p>When you look at the backtrace here, you won't see any of our user code:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>bt
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> bt
 <span class="c1">#0  0x00007f9b27f2aa7c in pthread_kill () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#1  0x00007f9b27ed6476 in raise () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#2  0x00007f9b27ebc7f3 in abort () from /lib/x86_64-linux-gnu/libc.so.6</span>
 <span class="c1">#3  0x0000555c45a8505b in fatal_error_exit (status=&lt;optimized out&gt;) at Python/pylifecycle.c:2553</span>
 <span class="c1">#4  0x0000555c45a895c7 in fatal_error (fd=2, header=header@entry=1,</span>
-<span class="w">    </span><span class="nv">prefix</span><span class="o">=</span>prefix@entry<span class="o">=</span>0x555c45c08a60<span class="w"> </span>&lt;__func__.18&gt;<span class="w"> </span><span class="s2">"_Py_CheckFunctionResult"</span>,
-<span class="w">    </span><span class="nv">msg</span><span class="o">=</span>msg@entry<span class="o">=</span>0x555c45c08528<span class="w"> </span><span class="s2">"a function returned a result with an exception set"</span>,<span class="w"> </span><span class="nv">status</span><span class="o">=</span>status@entry<span class="o">=</span>-1<span class="o">)</span>
-<span class="w">    </span>at<span class="w"> </span>Python/pylifecycle.c:2734
+    <span class="nv">prefix</span><span class="o">=</span>prefix@entry<span class="o">=</span>0x555c45c08a60 &lt;__func__.18&gt; <span class="s2">"_Py_CheckFunctionResult"</span>,
+    <span class="nv">msg</span><span class="o">=</span>msg@entry<span class="o">=</span>0x555c45c08528 <span class="s2">"a function returned a result with an exception set"</span>, <span class="nv">status</span><span class="o">=</span>status@entry<span class="o">=</span>-1<span class="o">)</span>
+    at Python/pylifecycle.c:2734
 <span class="c1">#5  0x0000555c45a89630 in _Py_FatalErrorFunc (func=func@entry=0x555c45c08a60 &lt;__func__.18&gt; "_Py_CheckFunctionResult",</span>
 </pre></div>
 <p>This is a bit unfortunate because we can't directly trace back to our function. With that said, the message <tt class="docutils literal">a function returned a result with an exception set</tt> clues us in on where we need to look. CPython manages one global error indicator queryable via <a class="reference external" href="https://docs.python.org/3/c-api/exceptions.html">PyErr_Occurred()</a>.</p>
 <p>To do this, let's set a <tt class="docutils literal">break say_hello_and_return_none</tt> to pause execution when we enter our function.  Then <tt class="docutils literal">run</tt> to get to that point and add a <tt class="docutils literal">watch PyErr_Occurred()</tt> to the mix.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>say_hello_and_return_none
-Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>0x7f0a8fbf5200:<span class="w"> </span>file<span class="w"> </span>debugging_demo3.c,<span class="w"> </span>line<span class="w"> </span><span class="m">8</span>.
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>run
-The<span class="w"> </span>program<span class="w"> </span>being<span class="w"> </span>debugged<span class="w"> </span>has<span class="w"> </span>been<span class="w"> </span>started<span class="w"> </span>already.
-Start<span class="w"> </span>it<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>beginning?<span class="w"> </span><span class="o">(</span>y<span class="w"> </span>or<span class="w"> </span>n<span class="o">)</span><span class="w"> </span>y
-Starting<span class="w"> </span>program:<span class="w"> </span>/usr/local/bin/python3<span class="w"> </span>-c<span class="w"> </span>import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
-warning:<span class="w"> </span>Error<span class="w"> </span>disabling<span class="w"> </span>address<span class="w"> </span>space<span class="w"> </span>randomization:<span class="w"> </span>Operation<span class="w"> </span>not<span class="w"> </span>permitted
-<span class="o">[</span>Thread<span class="w"> </span>debugging<span class="w"> </span>using<span class="w"> </span>libthread_db<span class="w"> </span>enabled<span class="o">]</span>
-Using<span class="w"> </span>host<span class="w"> </span>libthread_db<span class="w"> </span>library<span class="w"> </span><span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">break</span> say_hello_and_return_none
+Breakpoint <span class="m">1</span> at 0x7f0a8fbf5200: file debugging_demo3.c, line <span class="m">8</span>.
+<span class="o">(</span>gdb<span class="o">)</span> run
+The program being debugged has been started already.
+Start it from the beginning? <span class="o">(</span>y or n<span class="o">)</span> y
+Starting program: /usr/local/bin/python3 -c import<span class="se">\ </span>debugging_demo3<span class="se">\;\ </span>debugging_demo3.say_hello_and_return_none<span class="se">\(</span><span class="m">555</span><span class="se">\)</span>
+warning: Error disabling address space randomization: Operation not permitted
+<span class="o">[</span>Thread debugging using libthread_db enabled<span class="o">]</span>
+Using host libthread_db library <span class="s2">"/lib/x86_64-linux-gnu/libthread_db.so.1"</span>.
 
-Breakpoint<span class="w"> </span><span class="m">1</span>,<span class="w"> </span>say_hello_and_return_none<span class="w"> </span><span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f58e60305f0,<span class="w"> </span><span class="nv">args</span><span class="o">=</span>0x7f58e5fe98b0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>debugging_demo3.c:8
-<span class="m">8</span><span class="w">    </span><span class="o">{</span>
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>watch<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
-Watchpoint<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
+Breakpoint <span class="m">1</span>, say_hello_and_return_none <span class="o">(</span><span class="nv">self</span><span class="o">=</span>0x7f58e60305f0, <span class="nv">args</span><span class="o">=</span>0x7f58e5fe98b0<span class="o">)</span> at debugging_demo3.c:8
+<span class="m">8</span>    <span class="o">{</span>
+<span class="o">(</span>gdb<span class="o">)</span> watch PyErr_Occurred<span class="o">()</span>
+Watchpoint <span class="m">2</span>: PyErr_Occurred<span class="o">()</span>
 </pre></div>
 <p>At this point <tt class="docutils literal">info break</tt> should show us the two conditions under which gdb will pause, either on <tt class="docutils literal">say_hello_and_return_none</tt> entry or when the <tt class="docutils literal">PyErr_Occurred()</tt> value changes.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>info<span class="w"> </span><span class="nb">break</span>
-Num<span class="w">     </span>Type<span class="w">           </span>Disp<span class="w"> </span>Enb<span class="w"> </span>Address<span class="w">            </span>What
-<span class="m">1</span><span class="w">       </span>breakpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">   </span>0x00007f58e5f87200<span class="w"> </span><span class="k">in</span><span class="w"> </span>say_hello_and_return_none<span class="w"> </span>at<span class="w"> </span>debugging_demo3.c:8
-<span class="w">     </span>breakpoint<span class="w"> </span>already<span class="w"> </span>hit<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nb">time</span>
-<span class="m">2</span><span class="w">       </span>watchpoint<span class="w">     </span>keep<span class="w"> </span>y<span class="w">                      </span>PyErr_Occurred<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> info <span class="nb">break</span>
+Num     Type           Disp Enb Address            What
+<span class="m">1</span>       breakpoint     keep y   0x00007f58e5f87200 <span class="k">in</span> say_hello_and_return_none at debugging_demo3.c:8
+     breakpoint already hit <span class="m">1</span> <span class="nb">time</span>
+<span class="m">2</span>       watchpoint     keep y                      PyErr_Occurred<span class="o">()</span>
 </pre></div>
 <p>Type <tt class="docutils literal">c</tt> to continue along and you will see that the watchpoint gets hit:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>c
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> c
 Continuing.
 
-Watchpoint<span class="w"> </span><span class="m">2</span>:<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
+Watchpoint <span class="m">2</span>: PyErr_Occurred<span class="o">()</span>
 
-Old<span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x0
-New<span class="w"> </span><span class="nv">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;
-_PyErr_Restore<span class="w"> </span><span class="o">(</span><span class="nv">tstate</span><span class="o">=</span>tstate@entry<span class="o">=</span>0x55ccfcb82930,<span class="w"> </span><span class="nv">type</span><span class="o">=</span>type@entry<span class="o">=</span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;,<span class="w"> </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640,<span class="w"> </span><span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:60
-<span class="m">60</span><span class="w">       </span>tstate-&gt;curexc_value<span class="w"> </span><span class="o">=</span><span class="w"> </span>value<span class="p">;</span>
+Old <span class="nv">value</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x0
+New <span class="nv">value</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;
+_PyErr_Restore <span class="o">(</span><span class="nv">tstate</span><span class="o">=</span>tstate@entry<span class="o">=</span>0x55ccfcb82930, <span class="nv">type</span><span class="o">=</span>type@entry<span class="o">=</span>0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;, <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640, <span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span> at Python/errors.c:60
+<span class="m">60</span>       tstate-&gt;curexc_value <span class="o">=</span> value<span class="p">;</span>
 </pre></div>
 <p>The watchpoint wasn't hit within our code, but internal to CPython. No matter - we can inspect the backtrace and see what point in our code base this might happen at.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>bt
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> bt
 <span class="c1">#0  _PyErr_Restore (tstate=tstate@entry=0x55ccfcb82930, type=type@entry=0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;,</span>
-<span class="w">    </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640,<span class="w"> </span><span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:60
+    <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640, <span class="nv">traceback</span><span class="o">=</span>0x0<span class="o">)</span> at Python/errors.c:60
 <span class="c1">#1  0x000055ccfb455d60 in _PyErr_SetObject (tstate=tstate@entry=0x55ccfcb82930,</span>
-<span class="w">    </span><span class="nv">exception</span><span class="o">=</span>exception@entry<span class="o">=</span>0x55ccfb73cc20<span class="w"> </span>&lt;_PyExc_TypeError&gt;,<span class="w"> </span><span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640<span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:189
+    <span class="nv">exception</span><span class="o">=</span>exception@entry<span class="o">=</span>0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;, <span class="nv">value</span><span class="o">=</span>value@entry<span class="o">=</span>0x7f58e6057640<span class="o">)</span> at Python/errors.c:189
 <span class="c1">#2  0x000055ccfb455f59 in _PyErr_SetString (tstate=0x55ccfcb82930, exception=0x55ccfb73cc20 &lt;_PyExc_TypeError&gt;,</span>
-<span class="w">    </span><span class="nv">string</span><span class="o">=</span>string@entry<span class="o">=</span>0x55ccfb645698<span class="w"> </span><span class="s2">"bad argument type for built-in operation"</span><span class="o">)</span><span class="w"> </span>at<span class="w"> </span>Python/errors.c:235
+    <span class="nv">string</span><span class="o">=</span>string@entry<span class="o">=</span>0x55ccfb645698 <span class="s2">"bad argument type for built-in operation"</span><span class="o">)</span> at Python/errors.c:235
 <span class="c1">#3  0x000055ccfb455fdd in PyErr_BadArgument () at Python/errors.c:667</span>
 <span class="c1">#4  0x000055ccfb402060 in PyUnicode_AsUTF8AndSize (unicode=&lt;optimized out&gt;, psize=psize@entry=0x0)</span>
-<span class="w">    </span>at<span class="w"> </span>Objects/unicodeobject.c:4245
+    at Objects/unicodeobject.c:4245
 <span class="c1">#5  0x000055ccfb402195 in PyUnicode_AsUTF8 (unicode=&lt;optimized out&gt;) at Objects/unicodeobject.c:4265</span>
 <span class="c1">#6  0x00007f58e5f87245 in say_hello_and_return_none (self=0x7f58e60305f0, args=0x7f58e5fe98b0) at debugging_demo3.c:14</span>
 </pre></div>
 <p>Frame 6 is <tt class="docutils literal">say_hello_and_return_none</tt>, specifically on line 14. You can jump back to that and see the line being called.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>f<span class="w"> </span><span class="m">6</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> f <span class="m">6</span>
 <span class="c1">#6  0x00007f58e5f87245 in say_hello_and_return_none (self=0x7f58e60305f0, args=0x7f58e5fe98b0) at debugging_demo3.c:14</span>
-<span class="m">14</span><span class="w">     </span>const<span class="w"> </span>char<span class="w"> </span>*str<span class="w"> </span><span class="o">=</span><span class="w"> </span>PyUnicode_AsUTF8<span class="o">(</span>name<span class="o">)</span><span class="p">;</span>
+<span class="m">14</span>     const char *str <span class="o">=</span> PyUnicode_AsUTF8<span class="o">(</span>name<span class="o">)</span><span class="p">;</span>
 </pre></div>
 <p>We know from our function invocation that we are passed the value <tt class="docutils literal">555</tt> as an argument to the function call. However, you wouldn't know this by trying to print the object in gdb.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>name
-<span class="nv">$1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>PyObject<span class="w"> </span>*<span class="o">)</span><span class="w"> </span>0x7f58e6013bc0
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>*name
-<span class="nv">$2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">{</span><span class="nv">ob_refcnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">4</span>,<span class="w"> </span><span class="nv">ob_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x55ccfb73f180<span class="w"> </span>&lt;PyLong_Type&gt;<span class="o">}</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> p name
+<span class="nv">$1</span> <span class="o">=</span> <span class="o">(</span>PyObject *<span class="o">)</span> 0x7f58e6013bc0
+<span class="o">(</span>gdb<span class="o">)</span> p *name
+<span class="nv">$2</span> <span class="o">=</span> <span class="o">{</span><span class="nv">ob_refcnt</span> <span class="o">=</span> <span class="m">4</span>, <span class="nv">ob_type</span> <span class="o">=</span> 0x55ccfb73f180 &lt;PyLong_Type&gt;<span class="o">}</span>
 </pre></div>
 <p>We get <em>some</em> information when dereferencing this object about the basic <tt class="docutils literal">PyObject</tt> struct members. But we'd have to muck around a bit more to see the members that are relevant to longs, or whatever object type it is we inspect.</p>
 <p><em>This</em> is where the gdb extension becomes a really powerful abstraction tool. First, we need to load the extension into gdb. This can be done at runtime with the <tt class="docutils literal">source</tt> command pointing to the extension file. In our docker image, this would mean</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">source</span><span class="w"> </span>/clones/cpython/Tools/gdb/libpython.py
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">source</span> /clones/cpython/Tools/gdb/libpython.py
 </pre></div>
 <p>Once you have loaded the extension, the default printing mechanism becomes a lot more familiar to Python users.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>name
-<span class="nv">$3</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">555</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> p name
+<span class="nv">$3</span> <span class="o">=</span> <span class="m">555</span>
 </pre></div>
 <p>This confirms that the object we have on this line is the same we provided to the function call, so nothing way out of the ordinary is going on. Since the global <tt class="docutils literal">PyErr_Occurred()</tt> indicator was set, we can use <tt class="docutils literal">PyErr_Print()</tt> to get information from the Python runtime about what went wrong. Note that calling this <em>clears</em> the error indicator.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>call<span class="w"> </span>PyErr_PrintEx<span class="o">(</span><span class="m">0</span><span class="o">)</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> call PyErr_PrintEx<span class="o">(</span><span class="m">0</span><span class="o">)</span>
 TypeError
-<span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span>p<span class="w"> </span>PyErr_Occurred<span class="o">()</span>
-<span class="nv">$4</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>0x0
+<span class="o">(</span>gdb<span class="o">)</span> p PyErr_Occurred<span class="o">()</span>
+<span class="nv">$4</span> <span class="o">=</span> 0x0
 </pre></div>
 <p>We called <tt class="docutils literal">PyUnicode_AsUTF8</tt> with a <tt class="docutils literal">PyLong</tt> object even though it expected <tt class="docutils literal">PyUnicode</tt>. In the Python runtime this would automatically trigger an exception and stop things immediately. C doesn't have built-in error handling, so things continue unless you explicitly handle the issue.</p>
 <p>Following the pattern of <a class="reference external" href="https://docs.python.org/3/c-api/exceptions.htmlpyerr">CPython Exception Handling</a>, we are going to slightly modify our source code to look like this:</p>
 <div class="highlight"><pre><span></span><span class="cp">#define PY_SSIZE_T_CLEAN</span>
-<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;Python.h&gt;</span><span class="cp"></span>
 
 <span class="cp">#define NUM_WORDS 4</span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span>
-<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="w"></span>
+<span class="nf">say_hello_and_return_none</span><span class="w"> </span><span class="p">(</span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">self</span><span class="p">,</span><span class="w"> </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">args</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyObject</span><span class="w"> </span><span class="o">*</span><span class="n">name</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PyArg_ParseTuple</span><span class="p">(</span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="s">"O"</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">name</span><span class="p">))</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PyUnicode_AsUTF8</span><span class="p">(</span><span class="n">name</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">str</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">NULL</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"></span>
+<span class="w">  </span><span class="p">}</span><span class="w"></span>
 
-<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span>
-<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span>
-<span class="p">}</span>
+<span class="w">  </span><span class="n">printf</span><span class="p">(</span><span class="s">"Hello, %s</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="w"> </span><span class="n">str</span><span class="p">);</span><span class="w"></span>
+<span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span>
-<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span>
-<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
+<span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
+<span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span>
-<span class="p">};</span>
+<span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo3_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo3"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo3_methods</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="p">{</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span>
-<span class="p">}</span>
+<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo3</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="p">{</span><span class="w"></span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo3_module</span><span class="p">);</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
 </pre></div>
 <p>The <tt class="docutils literal">if (str == NULL)</tt> is our way of handling a failed <tt class="docutils literal">PyUnicode_AsUTF8</tt> call. By propagating that <tt class="docutils literal">NULL</tt> value up the call stack, CPython will gracefully handle the error for us when we get back to the Python runtime. To confirm, recompile and trying passing the same argument to the function.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span><span class="w"> </span><span class="nb">exit</span>
-A<span class="w"> </span>debugging<span class="w"> </span>session<span class="w"> </span>is<span class="w"> </span>active.
+<div class="highlight"><pre><span></span><span class="o">(</span>gdb<span class="o">)</span> <span class="nb">exit</span>
+A debugging session is active.
 
-<span class="w">     </span>Inferior<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="o">[</span>process<span class="w"> </span><span class="m">515</span><span class="o">]</span><span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>killed.
+     Inferior <span class="m">1</span> <span class="o">[</span>process <span class="m">515</span><span class="o">]</span> will be killed.
 
-Quit<span class="w"> </span>anyway?<span class="w"> </span><span class="o">(</span>y<span class="w"> </span>or<span class="w"> </span>n<span class="o">)</span><span class="w"> </span>y
-root@ba83cd50f6ec:/data#<span class="w"> </span>gcc<span class="w"> </span>-g3<span class="w"> </span>-Wall<span class="w"> </span>-Werror<span class="w"> </span>-std<span class="o">=</span>c17<span class="w"> </span>-shared<span class="w"> </span>-fPIC<span class="w"> </span>-I/usr/local/include/python3.10d<span class="w"> </span>debugging_demo3.c<span class="w"> </span>-o<span class="w"> </span>debugging_demo3.so
-root@ba83cd50f6ec:/data#<span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
-Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
-<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;string&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
-TypeError:<span class="w"> </span>bad<span class="w"> </span>argument<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="k">for</span><span class="w"> </span>built-in<span class="w"> </span>operation
+Quit anyway? <span class="o">(</span>y or n<span class="o">)</span> y
+root@ba83cd50f6ec:/data# gcc -g3 -Wall -Werror -std<span class="o">=</span>c17 -shared -fPIC -I/usr/local/include/python3.10d debugging_demo3.c -o debugging_demo3.so
+root@ba83cd50f6ec:/data# python3 -c <span class="s2">"import debugging_demo3; debugging_demo3.say_hello_and_return_none(555)"</span>
+Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+  File <span class="s2">"&lt;string&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
+TypeError: bad argument <span class="nb">type</span> <span class="k">for</span> built-in operation
 </pre></div>
 <p>We still have an error, but the error is the built-in <tt class="docutils literal">TypeError</tt> that we can handle in our Python code if we wanted, instead of the <tt class="docutils literal">SIGABRT</tt> that shut down the application previously.</p>
 <p>While not in scope for this article, there are many ways you can improve the above function. You could either change the <a class="reference external" href="https://docs.python.org/3/c-api/arg.html#strings-and-buffers">format string</a> provided to <tt class="docutils literal">PyArg_ParseTuple</tt> to map to something else besides a <tt class="docutils literal">PyObject *</tt>, or alternately mix in a call to <tt class="docutils literal">PyObject_Str</tt> to coerce any object to a unicode object prior to the <tt class="docutils literal">PyUnicode_AsUTF8</tt> call.</p>

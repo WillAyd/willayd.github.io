@@ -21,3 +21,8 @@ title = "Fundamental Python Debugging Part 3 - Cython Extensions"
 path = "profiling-python-extensions-with-callgrind.html"
 url = "/profiling-python-extensions-with-callgrind.html"
 title = "Profiling Python Extensions with callgrind"
+
+[[input.files]]
+path = "comparing-cython-to-rust-evaluating-python-extensions.html"
+url = "/comparing-cython-to-rust-evaluating-python-extensions.html"
+title = "Comparing Cython to Rust - Evaluating Python Extensions"
