@@ -1,5 +1,5 @@
 [input]
-base_directory = "output"
+base_directory = "/home/willayd/clones/willayd-pelican/output"
 html_selector = "main"
 
 [[input.files]]
