@@ -247,9 +247,9 @@ That's more like it! Whereas before we created 1_000_000 threads to operate on a
 Even Faster Parallelization
 ---------------------------
 
-`Irv Lustig <https://github.com/Dr-Irv>`_ had an idea that we could do away with the mutex above entirely, which would make our parallelization even faster since there would be no time spent on synchronizing the array we are writing to. The reason for this goes back to an understand of how NumPy arrays are laid out in memory - they are backed by a contiguous array of memory. So when we run threads in parallel with each having its own unique offset from the start of the NumPy array, we know that we can use that offset to access unique locations in memory to write to.
+`Irv Lustig <https://github.com/Dr-Irv>`_ had an idea that we could do away with the mutex, which would reduce the parallelization overhead of synchronizing access to the ``out`` variable. Internally the NumPy array manages its data in a contiguous array of memory, and indexing methods like ``out[i]`` just points to a location in memory that is ``i`` steps away from the start of that array. Because each thread manages its own value of ``i``, each thread also writes to a unique memory location without any overlap. Careful attention paid to this fact makes the synchronization unnecessary.
 
-Rust by default is skeptical of this, so we have to jump through a few hoops to make this possible. Here is what such an implementation could look like:
+Rust by default is skeptical of this, so we have to jump through a few hoops to make it work. Here is what such an implementation could look like:
 
 .. code-block:: rust
        // https://stackoverflow.com/questions/65178245/how-do-i-write-to-a-mutable-slice-from-multiple-threads-at-arbitrary-indexes-wit
@@ -308,7 +308,7 @@ Rust by default is skeptical of this, so we have to jump through a few hoops to 
            result
        }
 
-Compared to the thread-safe implementation, the first thing we wanted to do was get rid of the Mutex. If you try to do this naively Rust will complain that:
+Stepwise the first thing we wanted to do was get rid of the Mutex. Starting with the prior parallel implementation, once you do that Rust will complain:
 
 .. code-block:: sh
 
@@ -338,11 +338,11 @@ Alas things aren't so simple. This will in turn yield another error
 
     = help: within `[closure@src/lib.rs:56:23: 56:33]`, the trait `Sync` is not implemented for `UnsafeCell<&mut ArrayBase<OwnedRepr<i64>, Dim<[usize; 1]>>>`
 
-If you look carefully the note that `the trait `Sync` is not implemented...` means Rust isn't happen we are trying to use that object across threads without that trait being defined.
+If you look carefully the note that `the trait `Sync` is not implemented...` means Rust isn't happy we are trying to use that object across threads without the ``Sync`` trait being implemented on it. Some research will take us to the `SyncUnsafeCell <https://doc.rust-lang.org/std/cell/struct.SyncUnsafeCell.html>`_. This object implements the ``Sync`` trait, but as of writing is only available in nightly builds. While it is something to track, it does not help us today.
 
-Some research will take us back to the `SyncUnsafeCell <https://doc.rust-lang.org/std/cell/struct.SyncUnsafeCell.html>`_ which implements this trait. But as of writing this object is only available in nightly builds. While its something to keep an eye on, it doesn't help us with the problem at hand today.
+To work around this, user `Alice Ryhl <https://stackoverflow.com/users/1704411/alice-ryhl>`_ over at StackOverflow came up with `this nifty solution <https://stackoverflow.com/a/65182786/621736>`_. Alice's code works generically for slices; the implementation we have specializes only to ``Array1<i64>`` types, but keeps the same structure in place.
 
-To work around this, user `Alice Ryhl <https://stackoverflow.com/users/1704411/alice-ryhl>`_ over at StackOverflow came up with `this nifty solution <https://stackoverflow.com/a/65182786/621736>`_. Alice's solution works generically for slices; the implementation provided above specializes only to ``Array1<i64>`` types, but keeps the same structure in place. At a high level, instead of using the ``UnsafeCell`` directly, we create our own structure that uses the ``UnsafeCell`` as a field member. The custom structure provides blank trait implementations for ``Send`` and ``Sync`` so the compiler is happy to let it work across threads. With that in place, we call the ``unsafe`` write function within our thread and get the assignment to work that we always wanted.
+At a high level, instead of using the ``UnsafeCell`` directly, we create our own structure that uses the ``UnsafeCell`` as a field member. The custom structure provides blank trait implementations for ``Send`` and ``Sync`` so the compiler is happy to let it work across threads. With that in place, we can call the ``write`` member function from within our threads.
 
 So how does this compare function wise?
 
@@ -359,9 +359,11 @@ So how does this compare function wise?
    >>> ((res1 == res2) & (res1 == res3) & (res1 == res4)).all()
    True
 
-Compared to our initial Cython implementation, our unsafe threaded implementation takes about 16.5% of the same runtime.
+Compared to our initial Cython implementation, our unsafe threaded implementation takes about 16.5% of the same runtime. Not bad.
 
-The benchmarks above were recorded on a Lemur Pro laptop with a 12th Gen Intel(R) Core(TM) i7-1255U processor and 12 logical cores. Results will vary depending on your hardware and OS. If you want more control over the degree of parallelization than that which comes out of the box, be advised that this all dispatches to `rayon <https://docs.rs/rayon/latest/rayon/>`_ which uses `one thread per CPU <https://github.com/rayon-rs/rayon/blob/master/FAQ.md#how-many-threads-will-rayon-spawn>`_ by default. If you cared to you could accept a parameter into your extension function that limits the number of threads being spawned at one time, or alternately you can set the ``RAYON_NUM_THREADS`` environment variable.  From my machine if I run ``RAYON_NUM_THREADS=2 python`` and within the interpreter execute ``rustpy.find_max_parallel(arr)``, I get the response that ``rustpy parallel took 71 seconds``. This is an improvement over the default parallel implementation, which as we noted in the previous section introduced a lot of overhead with thread synchronization when arrays had a large number of columns and a relatively small amount of rows.
+The benchmarks above were recorded on a Lemur Pro laptop with a 12th Gen Intel(R) Core(TM) i7-1255U processor and 12 logical cores. Results will vary depending on your hardware and OS. If you want more control over the degree of parallelization than that which comes out of the box, be advised that this all dispatches to `rayon <https://docs.rs/rayon/latest/rayon/>`_ under the hood. Rayon uses `one thread per CPU <https://github.com/rayon-rs/rayon/blob/master/FAQ.md#how-many-threads-will-rayon-spawn>`_ by default. You could accept an argument into your extension function that limits the number of threads being spawned at one time, or alternately you can set the ``RAYON_NUM_THREADS`` environment variable.
+
+From my machine if I run ``RAYON_NUM_THREADS=2 python`` and within the interpreter execute ``rustpy.find_max_parallel(arr)``, I get the response that ``rustpy parallel took 71 seconds``. This is an improvement over the default parallel implementation, which as we noted in the previous section introduced a lot of overhead with thread synchronization when arrays had a large number of columns and a relatively small amount of rows.
 
 
 Closing Thoughts
