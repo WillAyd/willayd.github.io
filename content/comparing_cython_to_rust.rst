@@ -34,15 +34,17 @@ Here is our ``find_max`` function with a relatively optimized Cython implementat
    cdef ndarray[int64_t, ndim=1] _find_max(ndarray[int64_t, ndim=2] values):
        cdef:
            ndarray[int64_t, ndim=1] out
-           int64_t val, colnum, rownum
+           int64_t val, colnum, rownum, new_val
+           Py_ssize_t N, K
 
        N, K = (<object>values).shape
        out = np.zeros(K, dtype=np.int64)
        for colnum in range(K):
            val = LLONG_MIN  # imperfect assumption, but no INT64_T_MIN from numpy
            for rownum in range(N):
-               if val <= values[rownum, colnum]:
-                   val = values[rownum, colnum]
+               new_val = values[rownum, colnum]
+               if val < new_val:
+                   val = new_val
 
            out[colnum] = val
 
@@ -89,7 +91,7 @@ Within our newly created project, add ``numpy == "0.18"`` to the dependencies se
            for (i, col) in arr.axis_iter(Axis(1)).enumerate() {
                let mut val = i64::MIN;
                for x in col {
-                   if val <= *x {
+                   if val < *x {
                        val = *x;
                    }
                }
@@ -135,7 +137,7 @@ Let's check our cypy performance:
 
    >>> import cypy
    >>> result1 = cypy.find_max(arr)
-   cypy took 289.319301 milliseconds
+   cypy took 273.319301 milliseconds
 
 Versus the same function implemented in Rust:
 
@@ -147,7 +149,7 @@ Versus the same function implemented in Rust:
    >>> (result1 == result2).all()
    True
 
-The rust implementation only took ~40% of the time - not bad!
+The rust implementation only took ~45% of the time - not bad!
 
 Parallelization
 ---------------
@@ -182,7 +184,7 @@ Then go ahead and all the following code below the ``find_max_py`` function.
                .for_each(|(i, col)| {
                    let mut val = i64::MIN;
                    for x in col {
-                       if val <= *x {
+                       if val < *x {
                            val = *x;
                        }
                    }
@@ -212,7 +214,7 @@ Then go ahead and all the following code below the ``find_max_py`` function.
        }
 
 
-Within the comments I've linked some StackOverflow articles that you may find of interest. At a high level, now that we want to execute things in parallel we need to implement a `Mutex <https://doc.rust-lang.org/std/sync/struct.Mutex.html>`_ to prevent data races. We also use an automatic reference counter `Arc <https://doc.rust-lang.org/std/sync/struct.Arc.html>`_, which is a common way for sharing things across thread.
+Within the comments I've linked some StackOverflow articles that you may find of interest. At a high level, now that we want to execute things in parallel we need to implement a `Mutex <https://doc.rust-lang.org/std/sync/struct.Mutex.html>`_ to prevent data races. We also use a thread-safe reference counter `Arc <https://doc.rust-lang.org/std/sync/struct.Arc.html>`_; using these in tandem is a common pattern in Rust.
 
 So how does this compare performance-wise to our examples above?
 
@@ -220,7 +222,7 @@ So how does this compare performance-wise to our examples above?
 
    >>> import rustpy
    >>> result3 = rustpy.find_max_parallel(arr)
-   rustpy took 234 milliseconds
+   rustpy parallel took 234 milliseconds
    >>> (result2 == result3).all()
    True
 
@@ -238,11 +240,133 @@ What happens if we transpose the array?
    >>> rustpy.find_max(arr2)
    rustpy took 67 milliseconds
    >>> rustpy.find_max_parallel(arr2)
-   rustpy took 38 milliseconds
+   rustpy parallel took 38 milliseconds
 
 That's more like it! Whereas before we created 1_000_000 threads to operate on arrays of 100 records, now we use 100 threads to operate on arrays of 1_000_000 records. The relative cost of starting / stopping threads and synchronizing access via the mutex in this case is far lower than the relative performance gain we get from allowing threads to operate on large arrays in parallel.
+
+Even Faster Parallelization
+---------------------------
+
+`Irv Lustig <https://github.com/Dr-Irv>`_ had an idea that we could do away with the mutex above entirely, which would make our parallelization even faster since there would be no time spent on synchronizing the array we are writing to. The reason for this goes back to an understand of how NumPy arrays are laid out in memory - they are backed by a contiguous array of memory. So when we run threads in parallel with each having its own unique offset from the start of the NumPy array, we know that we can use that offset to access unique locations in memory to write to.
+
+Rust by default is skeptical of this, so we have to jump through a few hoops to make this possible. Here is what such an implementation could look like:
+
+.. code-block:: rust
+       // https://stackoverflow.com/questions/65178245/how-do-i-write-to-a-mutable-slice-from-multiple-threads-at-arbitrary-indexes-wit
+       #[derive(Copy, Clone)]
+       struct UnsafeArray1<'a> {
+           array: &'a UnsafeCell<Array1<i64>>,
+       }
+
+       unsafe impl<'a> Send for UnsafeArray1<'a> {}
+       unsafe impl<'a> Sync for UnsafeArray1<'a> {}
+
+       impl<'a> UnsafeArray1<'a> {
+           pub fn new(array: &'a mut Array1<i64>) -> Self {
+               let ptr = array as *mut Array1<i64> as *const UnsafeCell<Array1<i64>>;
+               Self {
+                   array: unsafe { &*ptr },
+               }
+           }
+
+           /// SAFETY: It is UB if two threads write to the same index without
+           /// synchronization.
+           pub unsafe fn write(&self, i: usize, value: i64) {
+               let ptr = self.array.get();
+               (*ptr)[i] = value;
+           }
+       }
+
+       fn find_max_unsafe(arr: ArrayView2<'_, i64>) -> Array1<i64> {
+           let mut out = Array1::default(arr.ncols());
+           let uout = UnsafeArray1::new(&mut out);
+
+           Zip::indexed(arr.axis_iter(Axis(1)))
+               .into_par_iter()
+               .for_each(|(i, col)| {
+                   let mut val = i64::MIN;
+                   for x in col {
+                       if val < *x {
+                           val = *x;
+                       }
+                   }
+
+                   unsafe { uout.write(i, val) };
+               });
+
+           out
+       }
+
+       #[pyfn(m)]
+       #[pyo3(name = "find_max_unsafe")]
+       fn find_max_py_unsafe<'py>(py: Python<'py>, x: PyReadonlyArray2<'_, i64>) -> &'py PyArray1<i64> {
+           let start = SystemTime::now();
+           let result = find_max_unsafe(x.as_array()).into_pyarray(py);
+           let end = SystemTime::now();
+           let duration = end.duration_since(start).unwrap();
+           println!("rustpy unsafe took {} milliseconds", duration.as_millis());
+           result
+       }
+
+Compared to the thread-safe implementation, the first thing we wanted to do was get rid of the Mutex. If you try to do this naively Rust will complain that:
+
+.. code-block:: sh
+
+   error[E0596]: cannot borrow `out` as mutable, as it is a captured variable in a `Fn` closure
+
+As explained in `this link <https://users.rust-lang.org/t/cannot-borrow-write-as-mutable-as-it-is-a-captured-variable-in-a-fn-closure/78560>`_ the closure cannot use a mutable reference (here the ``out`` variable) defined outside of its scope. To make this possible we use the `UnsafeCell <https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html>`_ primitive. Our first attempt to do so could look something like this:
+
+.. code-block:: rust
+
+   let mut out = Array1::default(arr.ncols());
+   let uout = UnsafeCell::new(&mut out);
+
+   ...
+   // Let's assume we are within the closure
+      (*uout.get())[i] = val;
+   });
+
+   out
+
+Alas things aren't so simple. This will in turn yield another error
+
+.. code-block:: sh
+
+   error[E0277]: `UnsafeCell<&mut ArrayBase<OwnedRepr<i64>, Dim<[usize; 1]>>>` cannot be shared between threads safely
+
+   ...
+
+    = help: within `[closure@src/lib.rs:56:23: 56:33]`, the trait `Sync` is not implemented for `UnsafeCell<&mut ArrayBase<OwnedRepr<i64>, Dim<[usize; 1]>>>`
+
+If you look carefully the note that `the trait `Sync` is not implemented...` means Rust isn't happen we are trying to use that object across threads without that trait being defined.
+
+Some research will take us back to the `SyncUnsafeCell <https://doc.rust-lang.org/std/cell/struct.SyncUnsafeCell.html>`_ which implements this trait. But as of writing this object is only available in nightly builds. While its something to keep an eye on, it doesn't help us with the problem at hand today.
+
+To work around this, user `Alice Ryhl <https://stackoverflow.com/users/1704411/alice-ryhl>`_ over at StackOverflow came up with `this nifty solution <https://stackoverflow.com/a/65182786/621736>`_. Alice's solution works generically for slices; the implementation provided above specializes only to ``Array1<i64>`` types, but keeps the same structure in place. At a high level, instead of using the ``UnsafeCell`` directly, we create our own structure that uses the ``UnsafeCell`` as a field member. The custom structure provides blank trait implementations for ``Send`` and ``Sync`` so the compiler is happy to let it work across threads. With that in place, we call the ``unsafe`` write function within our thread and get the assignment to work that we always wanted.
+
+So how does this compare function wise?
+
+.. code-block:: python
+
+   >>> res1 = cypy.find_max(arr)
+   cypy took 284.153331 milliseconds
+   >>> res2 = rustpy.find_max(arr)
+   rustpy took 113 milliseconds
+   >>> res3 = rustpy.find_max_parallel(arr)
+   rustpy parallel took 223 milliseconds
+   >>> res4 = rustpy.find_max_unsafe(arr)
+   rustpy unsafe took 47 milliseconds
+   >>> ((res1 == res2) & (res1 == res3) & (res1 == res4)).all()
+   True
+
+Compared to our initial Cython implementation, our unsafe threaded implementation takes about 16.5% of the same runtime.
+
+The benchmarks above were recorded on a Lemur Pro laptop with a 12th Gen Intel(R) Core(TM) i7-1255U processor and 12 logical cores. Results will vary depending on your hardware and OS. If you want more control over the degree of parallelization than that which comes out of the box, be advised that this all dispatches to `rayon <https://docs.rs/rayon/latest/rayon/>`_ which uses `one thread per CPU <https://github.com/rayon-rs/rayon/blob/master/FAQ.md#how-many-threads-will-rayon-spawn>`_ by default. If you cared to you could accept a parameter into your extension function that limits the number of threads being spawned at one time, or alternately you can set the ``RAYON_NUM_THREADS`` environment variable.  From my machine if I run ``RAYON_NUM_THREADS=2 python`` and within the interpreter execute ``rustpy.find_max_parallel(arr)``, I get the response that ``rustpy parallel took 71 seconds``. This is an improvement over the default parallel implementation, which as we noted in the previous section introduced a lot of overhead with thread synchronization when arrays had a large number of columns and a relatively small amount of rows.
+
 
 Closing Thoughts
 ----------------
 
 From my initial trials I was very surprised by how good Rust was for building extensions. The language itself is pretty natural in a way that I think could be useful to higher-level programmers, while offering great performance at the same time. Not pictured in the above analysis were a ton of mistakes in trying to get code parallelized via Rust. In C/C++ I likely would have made a very buggy program; the Rust compiler prevented me from doing so here. In all, I think Rust can creep into the same realm that Cython occupies today and become a serious competitor for easy extension authoring.
+
+I also want to mention `Irv Lustig <https://github.com/Dr-Irv>`_, `Brock Mendel <https://github.com/jbrockmendel>`_, `Marc Garic <https://github.com/datapythonista>`_ and `Nathan Goldblum <https://github.com/ngoldbaum>`_ for their help in implementing and improving this article. Thanks all for your help and support!
