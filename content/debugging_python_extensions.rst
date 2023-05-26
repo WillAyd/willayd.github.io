@@ -59,20 +59,21 @@ Let's start with the following code in a file named ``debugging_demo.c``:
      Py_RETURN_NONE;
    }
 
-   static PyMethodDef DebuggingDemoMethods[] = {
+   static PyMethodDef debugging_demo_methods[] = {
      {"say_hello_and_return_none", say_hello_and_return_none, METH_VARARGS,
       "Says hello and returns none."},
      {NULL, NULL, 0, NULL}  /* Sentinel */
-   }
+   };
 
    static struct PyModuleDef debugging_demo_module = {
      PyModuleDef_HEAD_INIT,
      .m_name = "debugging_demo",
      .m_doc = "A simple extension to showcase debugging",
      .m_size = 0,
-     .m_methods =
+     .m_methods = debugging_demo_methods
+   };
 
-   PyMODINIT_FUC PyInit_debugging_demo(void)
+   PyMODINIT_FUNC PyInit_debugging_demo(void)
    {
      return PyModuleDef_Init(&debugging_demo_module);
    }
