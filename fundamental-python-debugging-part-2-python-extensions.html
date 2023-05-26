@@ -141,20 +141,21 @@
 <span class="w">  </span><span class="n">Py_RETURN_NONE</span><span class="p">;</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
 
-<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">DebuggingDemoMethods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="k">static</span><span class="w"> </span><span class="n">PyMethodDef</span><span class="w"> </span><span class="n">debugging_demo_methods</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="p">{</span><span class="s">"say_hello_and_return_none"</span><span class="p">,</span><span class="w"> </span><span class="n">say_hello_and_return_none</span><span class="p">,</span><span class="w"> </span><span class="n">METH_VARARGS</span><span class="p">,</span><span class="w"></span>
 <span class="w">   </span><span class="s">"Says hello and returns none."</span><span class="p">},</span><span class="w"></span>
 <span class="w">  </span><span class="p">{</span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">}</span><span class="w">  </span><span class="cm">/* Sentinel */</span><span class="w"></span>
-<span class="p">}</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
 <span class="k">static</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PyModuleDef</span><span class="w"> </span><span class="n">debugging_demo_module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="n">PyModuleDef_HEAD_INIT</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="p">.</span><span class="n">m_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"debugging_demo"</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="p">.</span><span class="n">m_doc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">"A simple extension to showcase debugging"</span><span class="p">,</span><span class="w"></span>
 <span class="w">  </span><span class="p">.</span><span class="n">m_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"></span>
-<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"></span>
+<span class="w">  </span><span class="p">.</span><span class="n">m_methods</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">debugging_demo_methods</span><span class="w"></span>
+<span class="p">};</span><span class="w"></span>
 
-<span class="n">PyMODINIT_FUC</span><span class="w"> </span><span class="n">PyInit_debugging_demo</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
+<span class="n">PyMODINIT_FUNC</span><span class="w"> </span><span class="nf">PyInit_debugging_demo</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"></span>
 <span class="p">{</span><span class="w"></span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">PyModuleDef_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">debugging_demo_module</span><span class="p">);</span><span class="w"></span>
 <span class="p">}</span><span class="w"></span>
