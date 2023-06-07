@@ -90,7 +90,7 @@
 <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
 <time>May 17, 2023</time>
 <div>
-<span> · 18 min read</span>
+<span> · 23 min read</span>
 </div>
 <div>
 <span> · Will Ayd</span>
@@ -101,13 +101,14 @@
 <details class="flex flex-col my-6 p-4 bg-zinc-200 dark:bg-zinc-800 rounded-lg">
 <summary class="text-lg font-bold">Table of contents</summary>
 <div class="mx-4 px-4 underline">
-<div id="toc"><ul><li><a class="toc-href" href="#coding-the-example-in-cython" title="Coding the example in Cython">Coding the example in Cython</a></li><li><a class="toc-href" href="#building-the-same-in-rust" title="Building the same in Rust">Building the same in Rust</a></li><li><a class="toc-href" href="#comparing-results" title="Comparing Results">Comparing Results</a></li><li><a class="toc-href" href="#parallelization" title="Parallelization">Parallelization</a></li><li><a class="toc-href" href="#even-faster-parallelization" title="Even Faster Parallelization">Even Faster Parallelization</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
+<div id="toc"><ul><li><a class="toc-href" href="#coding-the-example-in-cython" title="Coding the example in Cython">Coding the example in Cython</a></li><li><a class="toc-href" href="#building-the-same-in-rust" title="Building the same in Rust">Building the same in Rust</a></li><li><a class="toc-href" href="#comparing-results" title="Comparing Results">Comparing Results</a></li><li><a class="toc-href" href="#parallelization" title="Parallelization">Parallelization</a></li><li><a class="toc-href" href="#even-faster-parallelization" title="Even Faster Parallelization">Even Faster Parallelization</a></li><li><a class="toc-href" href="#turning-off-bounds-checking" title="Turning off bounds checking">Turning off bounds checking</a></li><li><a class="toc-href" href="#closing-thoughts" title="Closing Thoughts">Closing Thoughts</a></li></ul></div>
 </div>
 </details>
 <div class="max-w-7xl container mx-auto my-8 text-zinc-800 dark:text-zinc-300 prose lg:max-w-none prose-headings:text-zinc-800 prose-headings:dark:text-zinc-300 prose-h1:text-3xl lg:prose-h1:text-3xl prose-headings:font-semibold prose-pre:bg-zinc-200 prose-pre:text-zinc-800 dark:prose-pre:bg-zinc-800 dark:prose-pre:text-zinc-200 prose-blockquote:text-zinc-800 dark:prose-blockquote:text-zinc-200 prose-a:text-slate-600 prose-a:font-normal dark:prose-a:text-slate-400 dark:prose-strong:text-zinc-200 dark:prose-code:text-zinc-200 dark:prose-code:bg-zinc-800 prose-code:bg-zinc-200 prose-code:font-light prose-img:rounded-md sm:text-left md:text-justify">
 <p><a class="reference external" href="https://www.rust-lang.org/">Rust</a> as a language has had tremendous growth in recent years. With no intention of starting a language war, Rust has a much stronger type checking system than a language like C, and arguably feels more approachable than a language like C++. It also includes thread safety as part of the language, which can be immensely useful for those looking to optimize their system.</p>
 <p>Rust is also growing in usage as an extension language for Python. <a class="reference external" href="https://github.com/PyO3/pyo3">PyO3</a> makes writing extensions relatively easy, especially when compared to the same toolchain(s) for C/C++ extensions. While not as "Pythonic" as Cython, you can argue that Rust is more approachable to Python-developers than C/C++ are as languages. To see it in action, let's compare a Cython written extension to a Rust-written extension.</p>
 <p>For demonstration purposes we are taking a trivial example of a custom-implemented <tt class="docutils literal">max</tt> function along the columns of a NumPy array. The example is admittely naive (NumPy natively can handle this), but as a developer you may find yourself following a similar pattern for custom algorithms.</p>
+<p>The source code for these exercises is available on my <a class="reference external" href="https://github.com/WillAyd/rustpy">GitHub</a>.</p>
 <div class="section" id="coding-the-example-in-cython">
 <h2 id="coding-the-example-in-cython">Coding the example in Cython</h2>
 <p>Here is our <tt class="docutils literal">find_max</tt> function with a relatively optimized Cython implementation. Within a <tt class="docutils literal">cdef</tt> function, we determine the bounds of a 2D int64 array, loop over the columns / rows and evaluate each member of the array, looking for the largest value in each column.</p>
@@ -297,58 +298,24 @@
 <div class="section" id="even-faster-parallelization">
 <h2 id="even-faster-parallelization">Even Faster Parallelization</h2>
 <p><a class="reference external" href="https://github.com/Dr-Irv">Irv Lustig</a> had an idea that we could do away with the mutex, which would reduce the parallelization overhead of synchronizing access to the <tt class="docutils literal">out</tt> variable. Internally the NumPy array manages its data in a contiguous array of memory, and indexing methods like <tt class="docutils literal">out[i]</tt> just points to a location in memory that is <tt class="docutils literal">i</tt> steps away from the start of that array. Because each thread manages its own value of <tt class="docutils literal">i</tt>, each thread also writes to a unique memory location without any overlap. Careful attention paid to this fact makes the synchronization unnecessary.</p>
-<p>Rust by default is skeptical of this, so we have to jump through a few hoops to make it work. Here is what such an implementation could look like:</p>
-<div class="highlight"><pre><span></span>unsafe impl&lt;'a&gt; Send for UnsafeArray1&lt;'a&gt; {}
-unsafe impl&lt;'a&gt; Sync for UnsafeArray1&lt;'a&gt; {}
+<p>Rust by default is skeptical of this, so we have to jump through a few hoops to make it work. Stepwise the first thing we wanted to do was get rid of the Mutex. However, Rust will reject the following code:</p>
+<div class="highlight"><pre><span></span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Array1</span>::<span class="n">default</span><span class="p">(</span><span class="n">arr</span><span class="p">.</span><span class="n">ncols</span><span class="p">());</span><span class="w"></span>
 
-impl&lt;'a&gt; UnsafeArray1&lt;'a&gt; {
-    pub fn new(array: &amp;'a mut Array1&lt;i64&gt;) -&gt; Self {
-        let ptr = array as *mut Array1&lt;i64&gt; as *const UnsafeCell&lt;Array1&lt;i64&gt;&gt;;
-        Self {
-            array: unsafe { &amp;*ptr },
-        }
-    }
+<span class="n">Zip</span>::<span class="n">indexed</span><span class="p">(</span><span class="n">arr</span><span class="p">.</span><span class="n">axis_iter</span><span class="p">(</span><span class="n">Axis</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">into_par_iter</span><span class="p">()</span><span class="w"></span>
+<span class="w">    </span><span class="p">.</span><span class="n">for_each</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i64</span>::<span class="n">MIN</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
 
-    /// SAFETY: It is UB if two threads write to the same index without
-    /// synchronization.
-    pub unsafe fn write(&amp;self, i: usize, value: i64) {
-        let ptr = self.array.get();
-        (*ptr)[i] = value;
-    }
-}
-
-fn find_max_unsafe(arr: ArrayView2&lt;'_, i64&gt;) -&gt; Array1&lt;i64&gt; {
-    let mut out = Array1::default(arr.ncols());
-    let uout = UnsafeArray1::new(&amp;mut out);
-
-    Zip::indexed(arr.axis_iter(Axis(1)))
-        .into_par_iter()
-        .for_each(|(i, col)| {
-            let mut val = i64::MIN;
-            for x in col {
-                if val &lt; *x {
-                    val = *x;
-                }
-            }
-
-            unsafe { uout.write(i, val) };
-        });
-
-    out
-}
-
-#[pyfn(m)]
-#[pyo3(name = "find_max_unsafe")]
-fn find_max_py_unsafe&lt;'py&gt;(py: Python&lt;'py&gt;, x: PyReadonlyArray2&lt;'_, i64&gt;) -&gt; &amp;'py PyArray1&lt;i64&gt; {
-    let start = SystemTime::now();
-    let result = find_max_unsafe(x.as_array()).into_pyarray(py);
-    let end = SystemTime::now();
-    let duration = end.duration_since(start).unwrap();
-    println!("rustpy unsafe took {} milliseconds", duration.as_millis());
-    result
-}
+<span class="w">        </span><span class="n">out</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">val</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">});</span><span class="w"></span>
+<span class="n">out</span><span class="w"></span>
 </pre></div>
-<p>Stepwise the first thing we wanted to do was get rid of the Mutex. Starting with the prior parallel implementation, once you do that Rust will complain:</p>
+<p>With the following error</p>
 <div class="highlight"><pre><span></span>error<span class="o">[</span>E0596<span class="o">]</span>: cannot borrow <span class="sb">`</span>out<span class="sb">`</span> as mutable, as it is a captured variable <span class="k">in</span> a <span class="sb">`</span>Fn<span class="sb">`</span> closure
 </pre></div>
 <p>As explained in <a class="reference external" href="https://users.rust-lang.org/t/cannot-borrow-write-as-mutable-as-it-is-a-captured-variable-in-a-fn-closure/78560">this link</a> the closure cannot use a mutable reference (here the <tt class="docutils literal">out</tt> variable) defined outside of its scope. To make this possible we use the <a class="reference external" href="https://doc.rust-lang.org/std/cell/struct.UnsafeCell.html">UnsafeCell</a> primitive. Our first attempt to do so could look something like this:</p>
@@ -372,6 +339,71 @@ fn find_max_py_unsafe&lt;'py&gt;(py: Python&lt;'py&gt;, x: PyReadonlyArray2&lt;'
 <p>If you look carefully the note that <cite>the trait `Sync</cite> is not implemented...` means Rust isn't happy we are trying to use that object across threads without the <tt class="docutils literal">Sync</tt> trait being implemented on it. Some research will take us to the <a class="reference external" href="https://doc.rust-lang.org/std/cell/struct.SyncUnsafeCell.html">SyncUnsafeCell</a>. This object implements the <tt class="docutils literal">Sync</tt> trait, but as of writing is only available in nightly builds. While it is something to track, it does not help us today.</p>
 <p>To work around this, user <a class="reference external" href="https://stackoverflow.com/users/1704411/alice-ryhl">Alice Ryhl</a> over at StackOverflow came up with <a class="reference external" href="https://stackoverflow.com/a/65182786/621736">this nifty solution</a>. Alice's code works generically for slices; the implementation we have specializes only to <tt class="docutils literal">Array1&lt;i64&gt;</tt> types, but keeps the same structure in place.</p>
 <p>At a high level, instead of using the <tt class="docutils literal">UnsafeCell</tt> directly, we create our own structure that uses the <tt class="docutils literal">UnsafeCell</tt> as a field member. The custom structure provides blank trait implementations for <tt class="docutils literal">Send</tt> and <tt class="docutils literal">Sync</tt> so the compiler is happy to let it work across threads. With that in place, we can call the <tt class="docutils literal">write</tt> member function from within our threads.</p>
+<div class="highlight"><pre><span></span><span class="c1">// https://stackoverflow.com/questions/65178245/how-do-i-write-to-a-mutable-slice-from-multiple-threads-at-arbitrary-indexes-wit</span>
+<span class="cp">#[derive(Copy, Clone)]</span><span class="w"></span>
+<span class="k">struct</span> <span class="nc">UnsafeArray1</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="n">array</span>: <span class="kp">&amp;</span><span class="o">'</span><span class="na">a</span> <span class="nc">UnsafeCell</span><span class="o">&lt;</span><span class="n">Array1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;&gt;</span><span class="p">,</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">unsafe</span><span class="w"> </span><span class="k">impl</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="nb">Send</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">UnsafeArray1</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+<span class="k">unsafe</span><span class="w"> </span><span class="k">impl</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="nb">Sync</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">UnsafeArray1</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{}</span><span class="w"></span>
+
+<span class="k">impl</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="n">UnsafeArray1</span><span class="o">&lt;'</span><span class="na">a</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span> <span class="nf">new</span><span class="p">(</span><span class="n">array</span>: <span class="kp">&amp;</span><span class="o">'</span><span class="na">a</span> <span class="nc">mut</span><span class="w"> </span><span class="n">Array1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Self</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">array</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">*</span><span class="k">mut</span><span class="w"> </span><span class="n">Array1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="o">*</span><span class="k">const</span><span class="w"> </span><span class="n">UnsafeCell</span><span class="o">&lt;</span><span class="n">Array1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;&gt;</span><span class="p">;</span><span class="w"></span>
+<span class="w">        </span><span class="bp">Self</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="n">array</span>: <span class="nc">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;*</span><span class="n">ptr</span><span class="w"> </span><span class="p">},</span><span class="w"></span>
+<span class="w">        </span><span class="p">}</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">    </span><span class="sd">/// SAFETY: It is UB if two threads write to the same index without</span>
+<span class="w">    </span><span class="sd">/// synchronization.</span>
+<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">write</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">i</span>: <span class="kt">usize</span><span class="p">,</span><span class="w"> </span><span class="n">value</span>: <span class="kt">i64</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">        </span><span class="kd">let</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">array</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+<span class="w">        </span><span class="p">(</span><span class="o">*</span><span class="n">ptr</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"></span>
+<span class="w">    </span><span class="p">}</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="k">fn</span> <span class="nf">find_max_unsafe</span><span class="p">(</span><span class="n">arr</span>: <span class="nc">ArrayView2</span><span class="o">&lt;'</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="nc">Array1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Array1</span>::<span class="n">default</span><span class="p">(</span><span class="n">arr</span><span class="p">.</span><span class="n">ncols</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">uout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">UnsafeArray1</span>::<span class="n">new</span><span class="p">(</span><span class="o">&amp;</span><span class="k">mut</span><span class="w"> </span><span class="n">out</span><span class="p">);</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">Zip</span>::<span class="n">indexed</span><span class="p">(</span><span class="n">arr</span><span class="p">.</span><span class="n">axis_iter</span><span class="p">(</span><span class="n">Axis</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">into_par_iter</span><span class="p">()</span><span class="w"></span>
+<span class="w">        </span><span class="p">.</span><span class="n">for_each</span><span class="p">(</span><span class="o">|</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">col</span><span class="p">)</span><span class="o">|</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">            </span><span class="kd">let</span><span class="w"> </span><span class="k">mut</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">i64</span>::<span class="n">MIN</span><span class="p">;</span><span class="w"></span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="n">val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">                    </span><span class="n">val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="p">;</span><span class="w"></span>
+<span class="w">                </span><span class="p">}</span><span class="w"></span>
+<span class="w">            </span><span class="p">}</span><span class="w"></span>
+
+<span class="w">            </span><span class="k">unsafe</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">uout</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="n">val</span><span class="p">)</span><span class="w"> </span><span class="p">};</span><span class="w"></span>
+<span class="w">        </span><span class="p">});</span><span class="w"></span>
+
+<span class="w">    </span><span class="n">out</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+
+<span class="cp">#[pyfn(m)]</span><span class="w"></span>
+<span class="cp">#[pyo3(name = </span><span class="s">"find_max_unsafe"</span><span class="cp">)]</span><span class="w"></span>
+<span class="k">fn</span> <span class="nf">find_max_py_unsafe</span><span class="o">&lt;'</span><span class="na">py</span><span class="o">&gt;</span><span class="p">(</span><span class="n">py</span>: <span class="nc">Python</span><span class="o">&lt;'</span><span class="na">py</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">x</span>: <span class="nc">PyReadonlyArray2</span><span class="o">&lt;'</span><span class="nb">_</span><span class="p">,</span><span class="w"> </span><span class="kt">i64</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span>-&gt; <span class="kp">&amp;</span><span class="o">'</span><span class="na">py</span> <span class="nc">PyArray1</span><span class="o">&lt;</span><span class="kt">i64</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SystemTime</span>::<span class="n">now</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find_max_unsafe</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">as_array</span><span class="p">()).</span><span class="n">into_pyarray</span><span class="p">(</span><span class="n">py</span><span class="p">);</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SystemTime</span>::<span class="n">now</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">duration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">end</span><span class="p">.</span><span class="n">duration_since</span><span class="p">(</span><span class="n">start</span><span class="p">).</span><span class="n">unwrap</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="fm">println!</span><span class="p">(</span><span class="s">"rustpy unsafe took {} milliseconds"</span><span class="p">,</span><span class="w"> </span><span class="n">duration</span><span class="p">.</span><span class="n">as_millis</span><span class="p">());</span><span class="w"></span>
+<span class="w">    </span><span class="n">result</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
+</div>
+<div class="section" id="turning-off-bounds-checking">
+<h2 id="turning-off-bounds-checking">Turning off bounds checking</h2>
+<p>Since we are running <tt class="docutils literal">unsafe</tt> code blocks, we also have the ability to disable bounds checking our arrays. In Cython you would typically do this with the <tt class="docutils literal">@cython boundscheck(False)</tt> decorator. With the <a class="reference external" href="https://docs.rs/ndarray/latest/ndarray/">ndarray rust crate</a> you would replace the index operator <tt class="docutils literal">[]</tt> with <a class="reference external" href="https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.uget">uget</a> or <a class="reference external" href="https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.uget_mut">uget_mut</a>. For us, this means changing our write implementation for the <tt class="docutils literal">UnsafeArray1</tt> class to</p>
+<div class="highlight"><pre><span></span><span class="k">pub</span><span class="w"> </span><span class="k">unsafe</span><span class="w"> </span><span class="k">fn</span> <span class="nf">write</span><span class="p">(</span><span class="o">&amp;</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">i</span>: <span class="kt">usize</span><span class="p">,</span><span class="w"> </span><span class="n">value</span>: <span class="kt">i64</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"></span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="bp">self</span><span class="p">.</span><span class="n">array</span><span class="p">.</span><span class="n">get</span><span class="p">();</span><span class="w"></span>
+<span class="w">    </span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">ptr</span><span class="p">).</span><span class="n">uget_mut</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span><span class="w"></span>
+<span class="p">}</span><span class="w"></span>
+</pre></div>
 <p>So how does this compare function wise?</p>
 <div class="highlight"><pre><span></span><span class="o">&gt;&gt;&gt;</span> <span class="n">res1</span> <span class="o">=</span> <span class="n">cypy</span><span class="o">.</span><span class="n">find_max</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 <span class="n">cypy</span> <span class="n">took</span> <span class="mf">284.153331</span> <span class="n">milliseconds</span>
