@@ -16,6 +16,8 @@ Rust is also growing in usage as an extension language for Python. `PyO3 <https:
 
 For demonstration purposes we are taking a trivial example of a custom-implemented ``max`` function along the columns of a NumPy array. The example is admittely naive (NumPy natively can handle this), but as a developer you may find yourself following a similar pattern for custom algorithms.
 
+The source code for these exercises is available on my `GitHub <https://github.com/WillAyd/rustpy>`_.
+
 Coding the example in Cython
 ----------------------------
 
@@ -249,66 +251,27 @@ Even Faster Parallelization
 
 `Irv Lustig <https://github.com/Dr-Irv>`_ had an idea that we could do away with the mutex, which would reduce the parallelization overhead of synchronizing access to the ``out`` variable. Internally the NumPy array manages its data in a contiguous array of memory, and indexing methods like ``out[i]`` just points to a location in memory that is ``i`` steps away from the start of that array. Because each thread manages its own value of ``i``, each thread also writes to a unique memory location without any overlap. Careful attention paid to this fact makes the synchronization unnecessary.
 
-Rust by default is skeptical of this, so we have to jump through a few hoops to make it work. Here is what such an implementation could look like:
+Rust by default is skeptical of this, so we have to jump through a few hoops to make it work. Stepwise the first thing we wanted to do was get rid of the Mutex. However, Rust will reject the following code:
 
 .. code-block:: rust
-       // https://stackoverflow.com/questions/65178245/how-do-i-write-to-a-mutable-slice-from-multiple-threads-at-arbitrary-indexes-wit
-       #[derive(Copy, Clone)]
-       struct UnsafeArray1<'a> {
-           array: &'a UnsafeCell<Array1<i64>>,
-       }
 
-       unsafe impl<'a> Send for UnsafeArray1<'a> {}
-       unsafe impl<'a> Sync for UnsafeArray1<'a> {}
+   let mut out = Array1::default(arr.ncols());
 
-       impl<'a> UnsafeArray1<'a> {
-           pub fn new(array: &'a mut Array1<i64>) -> Self {
-               let ptr = array as *mut Array1<i64> as *const UnsafeCell<Array1<i64>>;
-               Self {
-                   array: unsafe { &*ptr },
+   Zip::indexed(arr.axis_iter(Axis(1)))
+       .into_par_iter()
+       .for_each(|(i, col)| {
+           let mut val = i64::MIN;
+           for x in col {
+               if val < *x {
+                   val = *x;
                }
            }
 
-           /// SAFETY: It is UB if two threads write to the same index without
-           /// synchronization.
-           pub unsafe fn write(&self, i: usize, value: i64) {
-               let ptr = self.array.get();
-               (*ptr)[i] = value;
-           }
-       }
+           out[i] = val;
+       });
+   out
 
-       fn find_max_unsafe(arr: ArrayView2<'_, i64>) -> Array1<i64> {
-           let mut out = Array1::default(arr.ncols());
-           let uout = UnsafeArray1::new(&mut out);
-
-           Zip::indexed(arr.axis_iter(Axis(1)))
-               .into_par_iter()
-               .for_each(|(i, col)| {
-                   let mut val = i64::MIN;
-                   for x in col {
-                       if val < *x {
-                           val = *x;
-                       }
-                   }
-
-                   unsafe { uout.write(i, val) };
-               });
-
-           out
-       }
-
-       #[pyfn(m)]
-       #[pyo3(name = "find_max_unsafe")]
-       fn find_max_py_unsafe<'py>(py: Python<'py>, x: PyReadonlyArray2<'_, i64>) -> &'py PyArray1<i64> {
-           let start = SystemTime::now();
-           let result = find_max_unsafe(x.as_array()).into_pyarray(py);
-           let end = SystemTime::now();
-           let duration = end.duration_since(start).unwrap();
-           println!("rustpy unsafe took {} milliseconds", duration.as_millis());
-           result
-       }
-
-Stepwise the first thing we wanted to do was get rid of the Mutex. Starting with the prior parallel implementation, once you do that Rust will complain:
+With the following error
 
 .. code-block:: sh
 
@@ -343,6 +306,76 @@ If you look carefully the note that `the trait `Sync` is not implemented...` mea
 To work around this, user `Alice Ryhl <https://stackoverflow.com/users/1704411/alice-ryhl>`_ over at StackOverflow came up with `this nifty solution <https://stackoverflow.com/a/65182786/621736>`_. Alice's code works generically for slices; the implementation we have specializes only to ``Array1<i64>`` types, but keeps the same structure in place.
 
 At a high level, instead of using the ``UnsafeCell`` directly, we create our own structure that uses the ``UnsafeCell`` as a field member. The custom structure provides blank trait implementations for ``Send`` and ``Sync`` so the compiler is happy to let it work across threads. With that in place, we can call the ``write`` member function from within our threads.
+
+.. code-block:: rust
+
+   // https://stackoverflow.com/questions/65178245/how-do-i-write-to-a-mutable-slice-from-multiple-threads-at-arbitrary-indexes-wit
+   #[derive(Copy, Clone)]
+   struct UnsafeArray1<'a> {
+       array: &'a UnsafeCell<Array1<i64>>,
+   }
+
+   unsafe impl<'a> Send for UnsafeArray1<'a> {}
+   unsafe impl<'a> Sync for UnsafeArray1<'a> {}
+
+   impl<'a> UnsafeArray1<'a> {
+       pub fn new(array: &'a mut Array1<i64>) -> Self {
+           let ptr = array as *mut Array1<i64> as *const UnsafeCell<Array1<i64>>;
+           Self {
+               array: unsafe { &*ptr },
+           }
+       }
+
+       /// SAFETY: It is UB if two threads write to the same index without
+       /// synchronization.
+       pub unsafe fn write(&self, i: usize, value: i64) {
+           let ptr = self.array.get();
+           (*ptr)[i] = value;
+       }
+   }
+
+   fn find_max_unsafe(arr: ArrayView2<'_, i64>) -> Array1<i64> {
+       let mut out = Array1::default(arr.ncols());
+       let uout = UnsafeArray1::new(&mut out);
+
+       Zip::indexed(arr.axis_iter(Axis(1)))
+           .into_par_iter()
+           .for_each(|(i, col)| {
+               let mut val = i64::MIN;
+               for x in col {
+                   if val < *x {
+                       val = *x;
+                   }
+               }
+
+               unsafe { uout.write(i, val) };
+           });
+
+       out
+   }
+
+   #[pyfn(m)]
+   #[pyo3(name = "find_max_unsafe")]
+   fn find_max_py_unsafe<'py>(py: Python<'py>, x: PyReadonlyArray2<'_, i64>) -> &'py PyArray1<i64> {
+       let start = SystemTime::now();
+       let result = find_max_unsafe(x.as_array()).into_pyarray(py);
+       let end = SystemTime::now();
+       let duration = end.duration_since(start).unwrap();
+       println!("rustpy unsafe took {} milliseconds", duration.as_millis());
+       result
+   }
+
+Turning off bounds checking
+---------------------------
+
+Since we are running ``unsafe`` code blocks, we also have the ability to disable bounds checking our arrays. In Cython you would typically do this with the ``@cython boundscheck(False)`` decorator. With the `ndarray rust crate <https://docs.rs/ndarray/latest/ndarray/>`_ you would replace the index operator ``[]`` with `uget <https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.uget>`_ or `uget_mut <https://docs.rs/ndarray/latest/ndarray/struct.ArrayBase.html#method.uget_mut>`_. For us, this means changing our write implementation for the ``UnsafeArray1`` class to
+
+.. code-block:: rust
+
+   pub unsafe fn write(&self, i: usize, value: i64) {
+       let ptr = self.array.get();
+       *(*ptr).uget_mut(i) = value;
+   }
 
 So how does this compare function wise?
 
