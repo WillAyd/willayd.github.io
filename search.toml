@@ -26,3 +26,8 @@ title = "Profiling Python Extensions with callgrind"
 path = "comparing-cython-to-rust-evaluating-python-extensions.html"
 url = "/comparing-cython-to-rust-evaluating-python-extensions.html"
 title = "Comparing Cython to Rust - Evaluating Python Extensions"
+
+[[input.files]]
+path = "leveraging-the-adbc-driver-in-analytics-workflows.html"
+url = "/leveraging-the-adbc-driver-in-analytics-workflows.html"
+title = "Leveraging the ADBC driver in Analytics Workflows"

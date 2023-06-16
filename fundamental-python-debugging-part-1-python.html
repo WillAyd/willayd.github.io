@@ -90,7 +90,7 @@
 <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
 <time>February 08, 2023</time>
 <div>
-<span> · 23 min read</span>
+<span> · 27 min read</span>
 </div>
 <div>
 <span> · Will Ayd</span>
@@ -124,135 +124,135 @@
     <span class="n">buggy_loop</span><span class="p">()</span>
 </pre></div>
 <p>Executing this program with <tt class="docutils literal">python buggy_program.py</tt> should yield:</p>
-<div class="highlight"><pre><span></span>The animal at index <span class="m">0</span> is dog
-The animal at index <span class="m">1</span> is cat
-The animal at index <span class="m">2</span> is turtle
-Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
-  File <span class="s2">"buggy_program.py"</span>, line <span class="m">10</span>, <span class="k">in</span> &lt;module&gt;
-    buggy_loop<span class="o">()</span>
-  File <span class="s2">"buggy_program.py"</span>, line <span class="m">6</span>, <span class="k">in</span> buggy_loop
-    print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
-IndexError: list index out of range
+<div class="highlight"><pre><span></span>The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">    </span>buggy_loop<span class="o">()</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">6</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>buggy_loop
+<span class="w">    </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+IndexError:<span class="w"> </span>list<span class="w"> </span>index<span class="w"> </span>out<span class="w"> </span>of<span class="w"> </span>range
 </pre></div>
 </div>
 <div class="section" id="part-1-debugging-exceptions">
 <h2 id="part-1-debugging-exceptions">Part 1: Debugging exceptions</h2>
 <p>Changing our command from <tt class="docutils literal">python buggy_script.py</tt> to <tt class="docutils literal">python <span class="pre">-m</span> pdb buggy_script.py</tt> will launch pdb and load the script. pdb will not immediately execute anything, but instead wait for your input. We assume we don't know any commands yet, so typing <tt class="docutils literal">help</tt> is the best thing for us to start with</p>
-<div class="highlight"><pre><span></span>&gt; /home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def buggy_loop<span class="o">()</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">help</span>
+<div class="highlight"><pre><span></span>&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span>
 
-Documented commands <span class="o">(</span><span class="nb">type</span> <span class="nb">help</span> &lt;topic&gt;<span class="o">)</span>:
+Documented<span class="w"> </span>commands<span class="w"> </span><span class="o">(</span><span class="nb">type</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span>&lt;topic&gt;<span class="o">)</span>:
 <span class="o">========================================</span>
-EOF    c          d        h         list      q        rv       undisplay
-a      cl         debug    <span class="nb">help</span>      ll        quit     s        unt
-<span class="nb">alias</span>  clear      disable  ignore    longlist  r        <span class="nb">source</span>   <span class="k">until</span>
-args   commands   display  interact  n         restart  step     up
-b      condition  down     j         next      <span class="k">return</span>   tbreak   w
-<span class="nb">break</span>  cont       <span class="nb">enable</span>   jump      p         retval   u        whatis
-bt     <span class="k">continue</span>   <span class="nb">exit</span>     l         pp        run      <span class="nb">unalias</span>  where
+EOF<span class="w">    </span>c<span class="w">          </span>d<span class="w">        </span>h<span class="w">         </span>list<span class="w">      </span>q<span class="w">        </span>rv<span class="w">       </span>undisplay
+a<span class="w">      </span>cl<span class="w">         </span>debug<span class="w">    </span><span class="nb">help</span><span class="w">      </span>ll<span class="w">        </span>quit<span class="w">     </span>s<span class="w">        </span>unt
+<span class="nb">alias</span><span class="w">  </span>clear<span class="w">      </span>disable<span class="w">  </span>ignore<span class="w">    </span>longlist<span class="w">  </span>r<span class="w">        </span><span class="nb">source</span><span class="w">   </span><span class="k">until</span>
+args<span class="w">   </span>commands<span class="w">   </span>display<span class="w">  </span>interact<span class="w">  </span>n<span class="w">         </span>restart<span class="w">  </span>step<span class="w">     </span>up
+b<span class="w">      </span>condition<span class="w">  </span>down<span class="w">     </span>j<span class="w">         </span>next<span class="w">      </span><span class="k">return</span><span class="w">   </span>tbreak<span class="w">   </span>w
+<span class="nb">break</span><span class="w">  </span>cont<span class="w">       </span><span class="nb">enable</span><span class="w">   </span>jump<span class="w">      </span>p<span class="w">         </span>retval<span class="w">   </span>u<span class="w">        </span>whatis
+bt<span class="w">     </span><span class="k">continue</span><span class="w">   </span><span class="nb">exit</span><span class="w">     </span>l<span class="w">         </span>pp<span class="w">        </span>run<span class="w">      </span><span class="nb">unalias</span><span class="w">  </span>where
 
-Miscellaneous <span class="nb">help</span> topics:
+Miscellaneous<span class="w"> </span><span class="nb">help</span><span class="w"> </span>topics:
 <span class="o">==========================</span>
-<span class="nb">exec</span>  pdb
+<span class="nb">exec</span><span class="w">  </span>pdb
 </pre></div>
 <p><tt class="docutils literal">help &lt;topic&gt;</tt> allows you to navigate any of the items listed above. We can even input <tt class="docutils literal">help help</tt> as a meta-command.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">help</span> <span class="nb">help</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span><span class="nb">help</span>
 h<span class="o">(</span>elp<span class="o">)</span>
-        Without argument, print the list of available commands.
-        With a <span class="nb">command</span> name as argument, print <span class="nb">help</span> about that command.
-        <span class="s2">"help pdb"</span> shows the full pdb documentation.
-        <span class="s2">"help exec"</span> gives <span class="nb">help</span> on the ! command.
+<span class="w">        </span>Without<span class="w"> </span>argument,<span class="w"> </span>print<span class="w"> </span>the<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>available<span class="w"> </span>commands.
+<span class="w">        </span>With<span class="w"> </span>a<span class="w"> </span><span class="nb">command</span><span class="w"> </span>name<span class="w"> </span>as<span class="w"> </span>argument,<span class="w"> </span>print<span class="w"> </span><span class="nb">help</span><span class="w"> </span>about<span class="w"> </span>that<span class="w"> </span>command.
+<span class="w">        </span><span class="s2">"help pdb"</span><span class="w"> </span>shows<span class="w"> </span>the<span class="w"> </span>full<span class="w"> </span>pdb<span class="w"> </span>documentation.
+<span class="w">        </span><span class="s2">"help exec"</span><span class="w"> </span>gives<span class="w"> </span><span class="nb">help</span><span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>!<span class="w"> </span>command.
 </pre></div>
 <p>The <tt class="docutils literal">help</tt> we have input so far is a pdb command and not the built-in <tt class="docutils literal">help</tt> function that Python provides. If you wanted to execute the latter, you should prefix your input with <tt class="docutils literal">!</tt>:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> !help<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>!help<span class="o">()</span>
 
-Welcome to Python <span class="m">3</span>.8<span class="err">'</span>s <span class="nb">help</span> utility!
+Welcome<span class="w"> </span>to<span class="w"> </span>Python<span class="w"> </span><span class="m">3</span>.8<span class="err">'</span>s<span class="w"> </span><span class="nb">help</span><span class="w"> </span>utility!
 
-If this is your first <span class="nb">time</span> using Python, you should definitely check out
-the tutorial on the Internet at https://docs.python.org/3.8/tutorial/.
+If<span class="w"> </span>this<span class="w"> </span>is<span class="w"> </span>your<span class="w"> </span>first<span class="w"> </span><span class="nb">time</span><span class="w"> </span>using<span class="w"> </span>Python,<span class="w"> </span>you<span class="w"> </span>should<span class="w"> </span>definitely<span class="w"> </span>check<span class="w"> </span>out
+the<span class="w"> </span>tutorial<span class="w"> </span>on<span class="w"> </span>the<span class="w"> </span>Internet<span class="w"> </span>at<span class="w"> </span>https://docs.python.org/3.8/tutorial/.
 
-Enter the name of any module, keyword, or topic to get <span class="nb">help</span> on writing
-Python programs and using Python modules.  To quit this <span class="nb">help</span> utility and
-<span class="k">return</span> to the interpreter, just <span class="nb">type</span> <span class="s2">"quit"</span>.
+Enter<span class="w"> </span>the<span class="w"> </span>name<span class="w"> </span>of<span class="w"> </span>any<span class="w"> </span>module,<span class="w"> </span>keyword,<span class="w"> </span>or<span class="w"> </span>topic<span class="w"> </span>to<span class="w"> </span>get<span class="w"> </span><span class="nb">help</span><span class="w"> </span>on<span class="w"> </span>writing
+Python<span class="w"> </span>programs<span class="w"> </span>and<span class="w"> </span>using<span class="w"> </span>Python<span class="w"> </span>modules.<span class="w">  </span>To<span class="w"> </span>quit<span class="w"> </span>this<span class="w"> </span><span class="nb">help</span><span class="w"> </span>utility<span class="w"> </span>and
+<span class="k">return</span><span class="w"> </span>to<span class="w"> </span>the<span class="w"> </span>interpreter,<span class="w"> </span>just<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s2">"quit"</span>.
 
-To get a list of available modules, keywords, symbols, or topics, <span class="nb">type</span>
-<span class="s2">"modules"</span>, <span class="s2">"keywords"</span>, <span class="s2">"symbols"</span>, or <span class="s2">"topics"</span>.  Each module also comes
-with a one-line summary of what it does<span class="p">;</span> to list the modules whose name
-or summary contain a given string such as <span class="s2">"spam"</span>, <span class="nb">type</span> <span class="s2">"modules spam"</span>.
+To<span class="w"> </span>get<span class="w"> </span>a<span class="w"> </span>list<span class="w"> </span>of<span class="w"> </span>available<span class="w"> </span>modules,<span class="w"> </span>keywords,<span class="w"> </span>symbols,<span class="w"> </span>or<span class="w"> </span>topics,<span class="w"> </span><span class="nb">type</span>
+<span class="s2">"modules"</span>,<span class="w"> </span><span class="s2">"keywords"</span>,<span class="w"> </span><span class="s2">"symbols"</span>,<span class="w"> </span>or<span class="w"> </span><span class="s2">"topics"</span>.<span class="w">  </span>Each<span class="w"> </span>module<span class="w"> </span>also<span class="w"> </span>comes
+with<span class="w"> </span>a<span class="w"> </span>one-line<span class="w"> </span>summary<span class="w"> </span>of<span class="w"> </span>what<span class="w"> </span>it<span class="w"> </span>does<span class="p">;</span><span class="w"> </span>to<span class="w"> </span>list<span class="w"> </span>the<span class="w"> </span>modules<span class="w"> </span>whose<span class="w"> </span>name
+or<span class="w"> </span>summary<span class="w"> </span>contain<span class="w"> </span>a<span class="w"> </span>given<span class="w"> </span>string<span class="w"> </span>such<span class="w"> </span>as<span class="w"> </span><span class="s2">"spam"</span>,<span class="w"> </span><span class="nb">type</span><span class="w"> </span><span class="s2">"modules spam"</span>.
 </pre></div>
 <p>If you executed the above <tt class="docutils literal">!help()</tt> command be sure to input <tt class="docutils literal">q</tt> and hit enter to quit the Python interactive help.</p>
 <p>To actually get code executing we want to <tt class="docutils literal">continue</tt>. <tt class="docutils literal">help continue</tt> shows us more about this command.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">help</span> c
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">help</span><span class="w"> </span>c
 c<span class="o">(</span>ont<span class="o">(</span>inue<span class="o">))</span>
-        Continue execution, only stop when a breakpoint is encountered.
+<span class="w">        </span>Continue<span class="w"> </span>execution,<span class="w"> </span>only<span class="w"> </span>stop<span class="w"> </span>when<span class="w"> </span>a<span class="w"> </span>breakpoint<span class="w"> </span>is<span class="w"> </span>encountered.
 </pre></div>
 <p>So <tt class="docutils literal">c</tt>, <tt class="docutils literal">cont</tt>, and <tt class="docutils literal">continue</tt> would all do the same things for us. For now input <tt class="docutils literal">c</tt> and press enter:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> c
-The animal at index <span class="m">0</span> is dog
-The animal at index <span class="m">1</span> is cat
-The animal at index <span class="m">2</span> is turtle
-Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
-  File <span class="s2">"/usr/lib/python3.10/pdb.py"</span>, line <span class="m">1726</span>, <span class="k">in</span> main
-    pdb._runscript<span class="o">(</span>mainpyfile<span class="o">)</span>
-  File <span class="s2">"/usr/lib/python3.10/pdb.py"</span>, line <span class="m">1586</span>, <span class="k">in</span> _runscript
-    self.run<span class="o">(</span>statement<span class="o">)</span>
-  File <span class="s2">"/usr/lib/python3.10/bdb.py"</span>, line <span class="m">597</span>, <span class="k">in</span> run
-    exec<span class="o">(</span>cmd, globals, locals<span class="o">)</span>
-  File <span class="s2">"&lt;string&gt;"</span>, line <span class="m">1</span>, <span class="k">in</span> &lt;module&gt;
-  File <span class="s2">"/home/willayd/buggy_program.py"</span>, line <span class="m">10</span>, <span class="k">in</span> &lt;module&gt;
-    buggy_loop<span class="o">()</span>
-  File <span class="s2">"/home/willayd/buggy_program.py"</span>, line <span class="m">6</span>, <span class="k">in</span> buggy_loop
-    print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
-IndexError: list index out of range
-Uncaught exception. Entering post mortem debugging
-Running <span class="s1">'cont'</span> or <span class="s1">'step'</span> will restart the program
-&gt; /home/willayd/buggy_program.py<span class="o">(</span><span class="m">6</span><span class="o">)</span>buggy_loop<span class="o">()</span>
--&gt; print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+Traceback<span class="w"> </span><span class="o">(</span>most<span class="w"> </span>recent<span class="w"> </span>call<span class="w"> </span>last<span class="o">)</span>:
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/pdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1726</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>main
+<span class="w">    </span>pdb._runscript<span class="o">(</span>mainpyfile<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/pdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1586</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>_runscript
+<span class="w">    </span>self.run<span class="o">(</span>statement<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/usr/lib/python3.10/bdb.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">597</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>run
+<span class="w">    </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"&lt;string&gt;"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">1</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/home/willayd/buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">10</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>&lt;module&gt;
+<span class="w">    </span>buggy_loop<span class="o">()</span>
+<span class="w">  </span>File<span class="w"> </span><span class="s2">"/home/willayd/buggy_program.py"</span>,<span class="w"> </span>line<span class="w"> </span><span class="m">6</span>,<span class="w"> </span><span class="k">in</span><span class="w"> </span>buggy_loop
+<span class="w">    </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+IndexError:<span class="w"> </span>list<span class="w"> </span>index<span class="w"> </span>out<span class="w"> </span>of<span class="w"> </span>range
+Uncaught<span class="w"> </span>exception.<span class="w"> </span>Entering<span class="w"> </span>post<span class="w"> </span>mortem<span class="w"> </span>debugging
+Running<span class="w"> </span><span class="s1">'cont'</span><span class="w"> </span>or<span class="w"> </span><span class="s1">'step'</span><span class="w"> </span>will<span class="w"> </span>restart<span class="w"> </span>the<span class="w"> </span>program
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">6</span><span class="o">)</span>buggy_loop<span class="o">()</span>
+-&gt;<span class="w"> </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
 <span class="o">(</span>pdb<span class="o">)</span>
 </pre></div>
 <p>The program has executed and printed the same traceback we saw without using pdb. However, since we are running our script under pdb execution halts after an error occurs and allows us to inspect the state of the program.</p>
 <p><tt class="docutils literal">l</tt> (short for list) shows us where the execution halted (see <cite>-&gt;</cite> below) and a few lines around that.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> l
-  <span class="m">1</span>          def buggy_loop<span class="o">()</span>:
-  <span class="m">2</span>              <span class="nv">animals</span> <span class="o">=</span> <span class="o">[</span><span class="s2">"dog"</span>, <span class="s2">"cat"</span>, <span class="s2">"turtle"</span><span class="o">]</span>
-  <span class="m">3</span>              <span class="nv">index</span> <span class="o">=</span> <span class="m">0</span>
-  <span class="m">4</span>
-  <span class="m">5</span>              <span class="k">while</span> index &lt;<span class="o">=</span> len<span class="o">(</span>animals<span class="o">)</span>:
-  <span class="m">6</span>  -&gt;              print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
-  <span class="m">7</span>                  <span class="nv">index</span> <span class="o">+=</span> <span class="m">1</span>
-  <span class="m">8</span>
-  <span class="m">9</span>          <span class="k">if</span> <span class="nv">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span>:
- <span class="m">10</span>              buggy_loop<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
+<span class="w">  </span><span class="m">1</span><span class="w">          </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="w">  </span><span class="m">2</span><span class="w">              </span><span class="nv">animals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="s2">"dog"</span>,<span class="w"> </span><span class="s2">"cat"</span>,<span class="w"> </span><span class="s2">"turtle"</span><span class="o">]</span>
+<span class="w">  </span><span class="m">3</span><span class="w">              </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="m">4</span>
+<span class="w">  </span><span class="m">5</span><span class="w">              </span><span class="k">while</span><span class="w"> </span>index<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>len<span class="o">(</span>animals<span class="o">)</span>:
+<span class="w">  </span><span class="m">6</span><span class="w">  </span>-&gt;<span class="w">              </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<span class="w">  </span><span class="m">7</span><span class="w">                  </span><span class="nv">index</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="m">1</span>
+<span class="w">  </span><span class="m">8</span>
+<span class="w">  </span><span class="m">9</span><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="nv">__name__</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"__main__"</span>:
+<span class="w"> </span><span class="m">10</span><span class="w">              </span>buggy_loop<span class="o">()</span>
 <span class="o">[</span>EOF<span class="o">]</span>
 </pre></div>
 <p>Typing <tt class="docutils literal">l</tt> again interestingly does not give us the same result:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> l
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
 <span class="o">[</span>EOF<span class="o">]</span>
 </pre></div>
 <p><tt class="docutils literal">list</tt> automatically iterates through the code every time the command is entered, and because our script is small we just reach the end-of-file. To continually display where execution halted you can enter <tt class="docutils literal">l .</tt>.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> l .
-  <span class="m">1</span>          def buggy_loop<span class="o">()</span>:
-  <span class="m">2</span>              <span class="nv">animals</span> <span class="o">=</span> <span class="o">[</span><span class="s2">"dog"</span>, <span class="s2">"cat"</span>, <span class="s2">"turtle"</span><span class="o">]</span>
-  <span class="m">3</span>              <span class="nv">index</span> <span class="o">=</span> <span class="m">0</span>
-  <span class="m">4</span>
-  <span class="m">5</span>              <span class="k">while</span> index &lt;<span class="o">=</span> len<span class="o">(</span>animals<span class="o">)</span>:
-  <span class="m">6</span>  -&gt;              print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
-  <span class="m">7</span>                  <span class="nv">index</span> <span class="o">+=</span> <span class="m">1</span>
-  <span class="m">8</span>
-  <span class="m">9</span>          <span class="k">if</span> <span class="nv">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span>:
- <span class="m">10</span>              buggy_loop<span class="o">()</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l<span class="w"> </span>.
+<span class="w">  </span><span class="m">1</span><span class="w">          </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="w">  </span><span class="m">2</span><span class="w">              </span><span class="nv">animals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">[</span><span class="s2">"dog"</span>,<span class="w"> </span><span class="s2">"cat"</span>,<span class="w"> </span><span class="s2">"turtle"</span><span class="o">]</span>
+<span class="w">  </span><span class="m">3</span><span class="w">              </span><span class="nv">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0</span>
+<span class="w">  </span><span class="m">4</span>
+<span class="w">  </span><span class="m">5</span><span class="w">              </span><span class="k">while</span><span class="w"> </span>index<span class="w"> </span>&lt;<span class="o">=</span><span class="w"> </span>len<span class="o">(</span>animals<span class="o">)</span>:
+<span class="w">  </span><span class="m">6</span><span class="w">  </span>-&gt;<span class="w">              </span>print<span class="o">(</span>f<span class="s2">"The animal at index {index} is {animals[index]}"</span><span class="o">)</span>
+<span class="w">  </span><span class="m">7</span><span class="w">                  </span><span class="nv">index</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="m">1</span>
+<span class="w">  </span><span class="m">8</span>
+<span class="w">  </span><span class="m">9</span><span class="w">          </span><span class="k">if</span><span class="w"> </span><span class="nv">__name__</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"__main__"</span>:
+<span class="w"> </span><span class="m">10</span><span class="w">              </span>buggy_loop<span class="o">()</span>
 <span class="o">[</span>EOF<span class="o">]</span>
 </pre></div>
 <p>Another nice feature of pdb is that you can enter expressions see the result printed back. For instance, we know we have a variable named <tt class="docutils literal">index</tt> in the function we are debugging, so entering that into pdb will print the value of index.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> index
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>index
 <span class="m">3</span>
 </pre></div>
 <p>If you are debugging a longer function with a lot of variables, you may also be interested in the <tt class="docutils literal">dir()</tt> or <tt class="docutils literal">locals()</tt> functions. The former shows the names of all variables in the current scope; the latter gives you the names and values.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> dir<span class="o">()</span>
-<span class="o">[</span><span class="s1">'animals'</span>, <span class="s1">'index'</span><span class="o">]</span>
-<span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'animals'</span>: <span class="o">[</span><span class="s1">'dog'</span>, <span class="s1">'cat'</span>, <span class="s1">'turtle'</span><span class="o">]</span>, <span class="s1">'index'</span>: <span class="m">3</span><span class="o">}</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>dir<span class="o">()</span>
+<span class="o">[</span><span class="s1">'animals'</span>,<span class="w"> </span><span class="s1">'index'</span><span class="o">]</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'animals'</span>:<span class="w"> </span><span class="o">[</span><span class="s1">'dog'</span>,<span class="w"> </span><span class="s1">'cat'</span>,<span class="w"> </span><span class="s1">'turtle'</span><span class="o">]</span>,<span class="w"> </span><span class="s1">'index'</span>:<span class="w"> </span><span class="m">3</span><span class="o">}</span>
 </pre></div>
 <p>Let us step back now and talk about the problem we are trying to solve. The traceback tells us we have an <tt class="docutils literal">IndexError: list index out of range</tt> on line 6, and the debugger paused us at that same line. Upon inspecting the <tt class="docutils literal">index</tt> variable in the debugger we note it has a value of 3.</p>
 <p>Line 6 attempts to do <tt class="docutils literal">animals[index]</tt>, which fails because Python is a 0-based index language. One fix is for us to change line 5 from</p>
@@ -262,22 +262,22 @@ Running <span class="s1">'cont'</span> or <span class="s1">'step'</span> will re
 <div class="highlight"><pre><span></span><span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">animals</span><span class="p">):</span>
 </pre></div>
 <p>If you make that change to the source code you can enter <tt class="docutils literal">restart</tt> into pdb to start over with the updated script logic. From there input <tt class="docutils literal">c</tt> and you will note the script executes without issue.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> restart
-Restarting /home/willayd/buggy_program.py with arguments:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_program.py<span class="w"> </span>with<span class="w"> </span>arguments:
 
-&gt; /home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def buggy_loop<span class="o">()</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> c
-Post mortem debugger finished. The /home/willayd/buggy_program.py will be restarted
-&gt; /home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def buggy_loop<span class="o">()</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> c
-The animal at index <span class="m">0</span> is dog
-The animal at index <span class="m">1</span> is cat
-The animal at index <span class="m">2</span> is turtle
-The program finished and will be restarted
-&gt; /home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def buggy_loop<span class="o">()</span>:
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+Post<span class="w"> </span>mortem<span class="w"> </span>debugger<span class="w"> </span>finished.<span class="w"> </span>The<span class="w"> </span>/home/willayd/buggy_program.py<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">0</span><span class="w"> </span>is<span class="w"> </span>dog
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">1</span><span class="w"> </span>is<span class="w"> </span>cat
+The<span class="w"> </span>animal<span class="w"> </span>at<span class="w"> </span>index<span class="w"> </span><span class="m">2</span><span class="w"> </span>is<span class="w"> </span>turtle
+The<span class="w"> </span>program<span class="w"> </span>finished<span class="w"> </span>and<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
+&gt;<span class="w"> </span>/home/willayd/buggy_program.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>buggy_loop<span class="o">()</span>:
 </pre></div>
 <p>Since things are good to go now, you can type <tt class="docutils literal">quit()</tt> into the debugger to close things out.</p>
 </div>
@@ -345,140 +345,140 @@ The program finished and will be restarted
     <span class="nb">print</span><span class="p">(</span><span class="n">normalize_json</span><span class="p">({</span><span class="s2">"_a"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"b"</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]}},</span> <span class="s2">""</span><span class="p">,</span> <span class="p">{},</span> <span class="s2">"_"</span><span class="p">))</span>
 </pre></div>
 <p>We can start the debugger and load the script using <tt class="docutils literal">python <span class="pre">-m</span> pdb buggy_script2.py</tt>. However, since there is no bug this time the code will not stop unless we explicitly set a <em>breakpoint</em>. <tt class="docutils literal">help break</tt> gives you some ideas on how to do this; for now start with <tt class="docutils literal">break normalize_json</tt></p>
-<div class="highlight"><pre><span></span>&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def normalize_json<span class="o">(</span>
-<span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">break</span> normalize_json
-Breakpoint <span class="m">1</span> at /home/willayd/buggy_script2.py:1
-<span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">break</span>
-Num Type         Disp Enb   Where
-<span class="m">1</span>   breakpoint   keep yes   at /home/willayd/buggy_script2.py:1
+<div class="highlight"><pre><span></span>&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json
+Breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span>
+Num<span class="w"> </span>Type<span class="w">         </span>Disp<span class="w"> </span>Enb<span class="w">   </span>Where
+<span class="m">1</span><span class="w">   </span>breakpoint<span class="w">   </span>keep<span class="w"> </span>yes<span class="w">   </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
 </pre></div>
 <p>Continue along by hitting <tt class="docutils literal">c</tt> then <tt class="docutils literal">l</tt> to list where execution paused, and you will see it is the first line of the <tt class="docutils literal">normalize_json</tt> function</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> c
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> l
-  <span class="m">2</span>              data,
-  <span class="m">3</span>              key_string,
-  <span class="m">4</span>              normalized_dict,
-  <span class="m">5</span>              separator
-  <span class="m">6</span>          <span class="o">)</span>:
-  <span class="m">7</span>  -&gt;          <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-  <span class="m">8</span>                  <span class="k">for</span> key, value <span class="k">in</span> data.items<span class="o">()</span>:
-  <span class="m">9</span>                      <span class="nv">new_key</span> <span class="o">=</span> f<span class="s2">"{key_string}{separator}{key}"</span>
- <span class="m">10</span>                      normalize_json<span class="o">(</span>
- <span class="m">11</span>                          <span class="nv">data</span><span class="o">=</span>value,
- <span class="m">12</span>                          <span class="c1"># to avoid adding the separator to the start of every key</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>l
+<span class="w">  </span><span class="m">2</span><span class="w">              </span>data,
+<span class="w">  </span><span class="m">3</span><span class="w">              </span>key_string,
+<span class="w">  </span><span class="m">4</span><span class="w">              </span>normalized_dict,
+<span class="w">  </span><span class="m">5</span><span class="w">              </span>separator
+<span class="w">  </span><span class="m">6</span><span class="w">          </span><span class="o">)</span>:
+<span class="w">  </span><span class="m">7</span><span class="w">  </span>-&gt;<span class="w">          </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="w">  </span><span class="m">8</span><span class="w">                  </span><span class="k">for</span><span class="w"> </span>key,<span class="w"> </span>value<span class="w"> </span><span class="k">in</span><span class="w"> </span>data.items<span class="o">()</span>:
+<span class="w">  </span><span class="m">9</span><span class="w">                      </span><span class="nv">new_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f<span class="s2">"{key_string}{separator}{key}"</span>
+<span class="w"> </span><span class="m">10</span><span class="w">                      </span>normalize_json<span class="o">(</span>
+<span class="w"> </span><span class="m">11</span><span class="w">                          </span><span class="nv">data</span><span class="o">=</span>value,
+<span class="w"> </span><span class="m">12</span><span class="w">                          </span><span class="c1"># to avoid adding the separator to the start of every key</span>
 </pre></div>
 <p>Another command worth introducing here is <tt class="docutils literal">backtrace</tt>, or <tt class="docutils literal">bt</tt> for short. Python functions operate as a [call stack](<a class="reference external" href="https://en.wikipedia.org/wiki/Call_stack">https://en.wikipedia.org/wiki/Call_stack</a>), so backtrace tells you the sequence of calls that lead up to the breakpoint.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> bt
-  /usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
--&gt; exec<span class="o">(</span>cmd, globals, locals<span class="o">)</span>
-  &lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; normalize_json<span class="o">({</span><span class="s2">"_a"</span>: <span class="o">{</span><span class="s2">"b"</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}}</span>, <span class="s2">""</span>, <span class="o">{}</span>, <span class="s2">"_"</span><span class="o">)</span>
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">)</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
 </pre></div>
 <p>Within pdb the most recent call appears on the bottom (other debuggers may reverse this), so reading from the bottom up we are at <tt class="docutils literal">normalize_json</tt> line 7 which was called by our <tt class="docutils literal">buggy_script2.py</tt> script on line 25. The calls preceding that are internal to Python. Hit <tt class="docutils literal">c</tt> again and another <tt class="docutils literal">bt</tt> to see what happens next:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> c
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> bt
-  /usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
--&gt; exec<span class="o">(</span>cmd, globals, locals<span class="o">)</span>
-  &lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; normalize_json<span class="o">({</span><span class="s2">"_a"</span>: <span class="o">{</span><span class="s2">"b"</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}}</span>, <span class="s2">""</span>, <span class="o">{}</span>, <span class="s2">"_"</span><span class="o">)</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; normalize_json<span class="o">(</span>
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">)</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
 </pre></div>
 <p>We are in a recursive function call, so we see that <tt class="docutils literal">normalize_json</tt> is at the bottom of our backtrace twice. This pattern would continue every time we continue script execution.</p>
 <p>pdb let's you move up and down the stack trace. We know we are 2 <tt class="docutils literal">normalize_json</tt> calls deep. The <tt class="docutils literal">up</tt> and <tt class="docutils literal">down</tt> commands not surprisingly move up and down the call stack trace, giving you the power to inspect each <em>frame</em>.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}</span>, <span class="s1">'key_string'</span>: <span class="s1">'_a'</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span><span class="o">}</span>
-<span class="o">(</span>Pdb<span class="o">)</span> up
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; normalize_json<span class="o">(</span>
-<span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">{</span><span class="s1">'_a'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}}</span>, <span class="s1">'key_string'</span>: <span class="s1">''</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span>, <span class="s1">'key'</span>: <span class="s1">'_a'</span>, <span class="s1">'value'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}</span>, <span class="s1">'new_key'</span>: <span class="s1">'__a'</span><span class="o">}</span>
-<span class="o">(</span>Pdb<span class="o">)</span> down
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}</span>, <span class="s1">'key_string'</span>: <span class="s1">'_a'</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span><span class="o">}</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>up
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'_a'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">''</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span>,<span class="w"> </span><span class="s1">'key'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'value'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'new_key'</span>:<span class="w"> </span><span class="s1">'__a'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>down
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'_a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
 </pre></div>
 <p>The first time we called <tt class="docutils literal">locals()</tt> we were at the most recent <tt class="docutils literal">normalize_json</tt> call. The <tt class="docutils literal">up</tt> command moved us back one frame; <tt class="docutils literal">down</tt> takes us back to the current frame.</p>
 <p>Since our input data isn't too deeply nested, we could keep continuing and moving up and down the stack to try and find where the issue appears, but this could be impractical with many layers of recursion. Fortunately we can be more intelligent with where and when we choose to pause code execution.</p>
 <p>To do that let's <tt class="docutils literal">restart</tt> our code execution and <tt class="docutils literal">clear</tt> our existing breakpoint(s).</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> restart
-Restarting /home/willayd/buggy_script2.py with arguments:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_script2.py<span class="w"> </span>with<span class="w"> </span>arguments:
 
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def normalize_json<span class="o">(</span>
-<span class="o">(</span>Pdb<span class="o">)</span> clear
-Clear all breaks? y
-Deleted breakpoint <span class="m">1</span> at /home/willayd/buggy_script2.py:1
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">1</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
 </pre></div>
 <p>If you inspected the <tt class="docutils literal">help break</tt> output earlier, you might have noticed that <tt class="docutils literal">break</tt> takes an optional condition argument. This is an expression that must evaluate to <tt class="docutils literal">True</tt> for the breakpoint to pause execution.</p>
 <p>We know from our bug report and from inspecting some of the <tt class="docutils literal">locals()</tt> outputs earlier that the bug likely happens when a variable named <tt class="docutils literal">key_string</tt> has the value of <tt class="docutils literal">a_b</tt>, so we can pause execution <em>only</em> when that condition is met.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">break</span> normalize_json, <span class="nv">key_string</span> <span class="o">==</span> <span class="s2">"a_b"</span>
-Breakpoint <span class="m">2</span> at /home/willayd/buggy_script2.py:1
-<span class="o">(</span>Pdb<span class="o">)</span> c
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> bt
-  /usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
--&gt; exec<span class="o">(</span>cmd, globals, locals<span class="o">)</span>
-  &lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; print<span class="o">(</span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>: <span class="o">{</span><span class="s2">"b"</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}}</span>, <span class="s2">""</span>, <span class="o">{}</span>, <span class="s2">"_"</span><span class="o">))</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; normalize_json<span class="o">(</span>
-  /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; normalize_json<span class="o">(</span>
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json,<span class="w"> </span><span class="nv">key_string</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">"a_b"</span>
+Breakpoint<span class="w"> </span><span class="m">2</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>bt
+<span class="w">  </span>/usr/lib/python3.10/bdb.py<span class="o">(</span><span class="m">597</span><span class="o">)</span>run<span class="o">()</span>
+-&gt;<span class="w"> </span>exec<span class="o">(</span>cmd,<span class="w"> </span>globals,<span class="w"> </span>locals<span class="o">)</span>
+<span class="w">  </span>&lt;string&gt;<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">25</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>print<span class="o">(</span>normalize_json<span class="o">({</span><span class="s2">"_a"</span>:<span class="w"> </span><span class="o">{</span><span class="s2">"b"</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s2">""</span>,<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s2">"_"</span><span class="o">))</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="w">  </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
 </pre></div>
 <p>The above backtrace shows us pausing code execution within the third call of <tt class="docutils literal">normalize_json</tt>. Even though our breakpoint was on the <tt class="docutils literal">normalize_json</tt> function, the expression <tt class="docutils literal">key_string == "a_b"</tt> did not evaluate to true for the first two function calls.</p>
 <p>Where our execution paused <tt class="docutils literal">key_string</tt> is not modified locally, but rather received as an argument. This means the bug may surface up one call in the backtrace, so move up and inspect the code:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> u
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; normalize_json<span class="o">(</span>
-<span class="o">(</span>Pdb<span class="o">)</span> ll
-  <span class="m">1</span> B        def normalize_json<span class="o">(</span>
-  <span class="m">2</span>              data,
-  <span class="m">3</span>              key_string,
-  <span class="m">4</span>              normalized_dict,
-  <span class="m">5</span>              separator
-  <span class="m">6</span>          <span class="o">)</span>:
-  <span class="m">7</span>              <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-  <span class="m">8</span>                  <span class="k">for</span> key, value <span class="k">in</span> data.items<span class="o">()</span>:
-  <span class="m">9</span>                      <span class="nv">new_key</span> <span class="o">=</span> f<span class="s2">"{key_string}{separator}{key}"</span>
- <span class="m">10</span>  -&gt;                  normalize_json<span class="o">(</span>
- <span class="m">11</span>                          <span class="nv">data</span><span class="o">=</span>value,
- <span class="m">12</span>                          <span class="c1"># to avoid adding the separator to the start of every key</span>
- <span class="m">13</span>                          <span class="nv">key_string</span><span class="o">=</span>new_key
- <span class="m">14</span>                          <span class="k">if</span> new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span> - <span class="m">1</span><span class="o">]</span> !<span class="o">=</span> separator
- <span class="m">15</span>                          <span class="k">else</span> new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span> :<span class="o">]</span>,
- <span class="m">16</span>                          <span class="nv">normalized_dict</span><span class="o">=</span>normalized_dict,
- <span class="m">17</span>                          <span class="nv">separator</span><span class="o">=</span>separator,
- <span class="m">18</span>                      <span class="o">)</span>
- <span class="m">19</span>              <span class="k">else</span>:
- <span class="m">20</span>                  normalized_dict<span class="o">[</span>key_string<span class="o">]</span> <span class="o">=</span> data
- <span class="m">21</span>              <span class="k">return</span> normalized_dict
-<span class="o">(</span>Pdb<span class="o">)</span> new_key
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>u
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">10</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>ll
+<span class="w">  </span><span class="m">1</span><span class="w"> </span>B<span class="w">        </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="w">  </span><span class="m">2</span><span class="w">              </span>data,
+<span class="w">  </span><span class="m">3</span><span class="w">              </span>key_string,
+<span class="w">  </span><span class="m">4</span><span class="w">              </span>normalized_dict,
+<span class="w">  </span><span class="m">5</span><span class="w">              </span>separator
+<span class="w">  </span><span class="m">6</span><span class="w">          </span><span class="o">)</span>:
+<span class="w">  </span><span class="m">7</span><span class="w">              </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="w">  </span><span class="m">8</span><span class="w">                  </span><span class="k">for</span><span class="w"> </span>key,<span class="w"> </span>value<span class="w"> </span><span class="k">in</span><span class="w"> </span>data.items<span class="o">()</span>:
+<span class="w">  </span><span class="m">9</span><span class="w">                      </span><span class="nv">new_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>f<span class="s2">"{key_string}{separator}{key}"</span>
+<span class="w"> </span><span class="m">10</span><span class="w">  </span>-&gt;<span class="w">                  </span>normalize_json<span class="o">(</span>
+<span class="w"> </span><span class="m">11</span><span class="w">                          </span><span class="nv">data</span><span class="o">=</span>value,
+<span class="w"> </span><span class="m">12</span><span class="w">                          </span><span class="c1"># to avoid adding the separator to the start of every key</span>
+<span class="w"> </span><span class="m">13</span><span class="w">                          </span><span class="nv">key_string</span><span class="o">=</span>new_key
+<span class="w"> </span><span class="m">14</span><span class="w">                          </span><span class="k">if</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="m">1</span><span class="o">]</span><span class="w"> </span>!<span class="o">=</span><span class="w"> </span>separator
+<span class="w"> </span><span class="m">15</span><span class="w">                          </span><span class="k">else</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>:<span class="o">]</span>,
+<span class="w"> </span><span class="m">16</span><span class="w">                          </span><span class="nv">normalized_dict</span><span class="o">=</span>normalized_dict,
+<span class="w"> </span><span class="m">17</span><span class="w">                          </span><span class="nv">separator</span><span class="o">=</span>separator,
+<span class="w"> </span><span class="m">18</span><span class="w">                      </span><span class="o">)</span>
+<span class="w"> </span><span class="m">19</span><span class="w">              </span><span class="k">else</span>:
+<span class="w"> </span><span class="m">20</span><span class="w">                  </span>normalized_dict<span class="o">[</span>key_string<span class="o">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>data
+<span class="w"> </span><span class="m">21</span><span class="w">              </span><span class="k">return</span><span class="w"> </span>normalized_dict
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key
 <span class="s1">'_a_b'</span>
 </pre></div>
 <p>Our code execution paused on line 10. On line 9 <tt class="docutils literal">new_key</tt> was assigned a value of <tt class="docutils literal">_a_b</tt>, which is what we want to see in the end result.</p>
 <p>Look closely at line 13 however and you will note that we aren't just forwarding <tt class="docutils literal">new_key</tt> as an argument to the next <tt class="docutils literal">normalize_json</tt> call. Instead we have an <tt class="docutils literal"><span class="pre">if...else</span></tt> statement that determines which gets forwarded along.  We can evaluate both branches of the conditional to get an idea of what is going on:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span> - <span class="m">1</span><span class="o">]</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span><span class="w"> </span>-<span class="w"> </span><span class="m">1</span><span class="o">]</span>
 <span class="s1">'_'</span>
-<span class="o">(</span>Pdb<span class="o">)</span> new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span>:<span class="o">]</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key<span class="o">[</span>len<span class="o">(</span>separator<span class="o">)</span>:<span class="o">]</span>
 <span class="s1">'a_b'</span>
-<span class="o">(</span>Pdb<span class="o">)</span> new_key
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>new_key
 <span class="s1">'_a_b'</span>
 </pre></div>
 <p>Our first instinct might be to simplify the function call and make the argument <tt class="docutils literal">key_string=new_key</tt>, making our buggy_script2.py script now look like:</p>
@@ -508,26 +508,26 @@ Breakpoint <span class="m">2</span> at /home/willayd/buggy_script2.py:1
 </pre></div>
 <p>This reads nicer, but we have fixed one thing by breaking another. Doing a <tt class="docutils literal">restart</tt> and <tt class="docutils literal">continue</tt> in no longer hits our breakpoint, but the script now prints out <tt class="docutils literal">{'__a_b': [1, 2, 3]}</tt>. We want <tt class="docutils literal">_a_b</tt> as the key not <tt class="docutils literal">__a_b</tt>.</p>
 <p>So back to the drawing board...in pdb input <tt class="docutils literal">restart</tt> and <tt class="docutils literal">clear</tt> to remove the breakpoint we set so far. Enter <tt class="docutils literal">break normalize_json</tt> so we can stop again during every function call.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> clear
-Clear all breaks? y
-Deleted breakpoint <span class="m">2</span> at /home/willayd/buggy_script2.py:1
-<span class="o">(</span>Pdb<span class="o">)</span> <span class="nb">break</span> normalize_json
-Breakpoint <span class="m">3</span> at /home/willayd/buggy_script2.py:1
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">2</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span><span class="nb">break</span><span class="w"> </span>normalize_json
+Breakpoint<span class="w"> </span><span class="m">3</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
 <span class="o">(</span>Pdb<span class="o">)</span>
 </pre></div>
 <p>Now step through a few function calls, inspect locals and see what might be happening:</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">{</span><span class="s1">'_a'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}}</span>, <span class="s1">'key_string'</span>: <span class="s1">''</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span><span class="o">}</span>
-<span class="o">(</span>Pdb<span class="o">)</span> c
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">{</span><span class="s1">'b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}</span>, <span class="s1">'key_string'</span>: <span class="s1">'__a'</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span><span class="o">}</span>
-<span class="o">(</span>Pdb<span class="o">)</span> c
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
--&gt; <span class="k">if</span> isinstance<span class="o">(</span>data, dict<span class="o">)</span>:
-<span class="o">(</span>Pdb<span class="o">)</span> locals<span class="o">()</span>
-<span class="o">{</span><span class="s1">'data'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]</span>, <span class="s1">'key_string'</span>: <span class="s1">'__a_b'</span>, <span class="s1">'normalized_dict'</span>: <span class="o">{}</span>, <span class="s1">'separator'</span>: <span class="s1">'_'</span><span class="o">}</span>
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'_a'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">''</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">{</span><span class="s1">'b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'__a'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">7</span><span class="o">)</span>normalize_json<span class="o">()</span>
+-&gt;<span class="w"> </span><span class="k">if</span><span class="w"> </span>isinstance<span class="o">(</span>data,<span class="w"> </span>dict<span class="o">)</span>:
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>locals<span class="o">()</span>
+<span class="o">{</span><span class="s1">'data'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]</span>,<span class="w"> </span><span class="s1">'key_string'</span>:<span class="w"> </span><span class="s1">'__a_b'</span>,<span class="w"> </span><span class="s1">'normalized_dict'</span>:<span class="w"> </span><span class="o">{}</span>,<span class="w"> </span><span class="s1">'separator'</span>:<span class="w"> </span><span class="s1">'_'</span><span class="o">}</span>
 <span class="o">(</span>Pdb<span class="o">)</span>
 </pre></div>
 <p>If you look closely, you will notice that the <tt class="docutils literal">key_string</tt> variable is already wrong on the second call to the <tt class="docutils literal">normalize_json</tt> function. But the pattern of joining that key with one separator appears correct in the call thereafter.</p>
@@ -548,17 +548,17 @@ if __name__ == "__main__":
     print(normalize_json({"_a": {"b": [1, 2, 3]}}, "", {}, "_"))
 </pre></div>
 <p>To verify this now works, <tt class="docutils literal">restart</tt> the program, <tt class="docutils literal">clear</tt> any breakpoint(s) and <tt class="docutils literal">continue</tt> to let things run. You should now get the right answer.</p>
-<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span> restart
-Restarting /home/willayd/buggy_script2.py with arguments:
+<div class="highlight"><pre><span></span><span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>restart
+Restarting<span class="w"> </span>/home/willayd/buggy_script2.py<span class="w"> </span>with<span class="w"> </span>arguments:
 
-&gt; /home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
--&gt; def normalize_json<span class="o">(</span>
-<span class="o">(</span>Pdb<span class="o">)</span> clear
-Clear all breaks? y
-Deleted breakpoint <span class="m">3</span> at /home/willayd/buggy_script2.py:1
-<span class="o">(</span>Pdb<span class="o">)</span> c
-<span class="o">{</span><span class="s1">'_a_b'</span>: <span class="o">[</span><span class="m">1</span>, <span class="m">2</span>, <span class="m">3</span><span class="o">]}</span>
-The program finished and will be restarted
+&gt;<span class="w"> </span>/home/willayd/buggy_script2.py<span class="o">(</span><span class="m">1</span><span class="o">)</span>&lt;module&gt;<span class="o">()</span>
+-&gt;<span class="w"> </span>def<span class="w"> </span>normalize_json<span class="o">(</span>
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>clear
+Clear<span class="w"> </span>all<span class="w"> </span>breaks?<span class="w"> </span>y
+Deleted<span class="w"> </span>breakpoint<span class="w"> </span><span class="m">3</span><span class="w"> </span>at<span class="w"> </span>/home/willayd/buggy_script2.py:1
+<span class="o">(</span>Pdb<span class="o">)</span><span class="w"> </span>c
+<span class="o">{</span><span class="s1">'_a_b'</span>:<span class="w"> </span><span class="o">[</span><span class="m">1</span>,<span class="w"> </span><span class="m">2</span>,<span class="w"> </span><span class="m">3</span><span class="o">]}</span>
+The<span class="w"> </span>program<span class="w"> </span>finished<span class="w"> </span>and<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>restarted
 </pre></div>
 </div>
 <div class="section" id="closing-thoughts">

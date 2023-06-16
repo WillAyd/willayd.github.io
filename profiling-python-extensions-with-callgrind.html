@@ -90,7 +90,7 @@
 <div class="flex text-xs text-zinc-800 dark:text-zinc-400">
 <time>April 03, 2023</time>
 <div>
-<span> · 9 min read</span>
+<span> · 11 min read</span>
 </div>
 <div>
 <span> · Will Ayd</span>
@@ -111,10 +111,10 @@
 <h2 id="setting-up-our-environment-data">Setting up our environment / data</h2>
 <p>To simplify the setup I have created a Dockerfile custom-built for this article, which you can pull via <tt class="docutils literal">docker pull <span class="pre">willayd/blog-posts:pandas-callgrind</span></tt>. If not using Docker you will need to <a class="reference external" href="https://valgrind.org/docs/manual/manual-core.html#manual-core.install">install Valgrind</a> alongside all of the pandas build requirements <a class="reference external" href="https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html">from the 1.5.x release</a>.</p>
 <p>You will also want to get a copy of the pandas 1.5 source code local to your computer. For this article we assume that source code will exist in a local directory named <cite>~/code/pandas-1.5</cite>. We will also checkout a particular commit to prevent any future changes made to 1.5.x from rendering the solution in this article incompatible.</p>
-<div class="highlight"><pre><span></span>willayd@willayd:~$ mkdir -p ~/code
-willayd@willayd:~$ git clone --depth<span class="o">=</span><span class="m">1</span> -b <span class="m">1</span>.5.x https://github.com/pandas-dev/pandas.git ~/code/pandas-1.5
-willayd@willayd:~$ <span class="nb">cd</span> ~/code/pandas-1.5
-willayd@willayd:~$ git checkout 778ab82
+<div class="highlight"><pre><span></span>willayd@willayd:~$<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>~/code
+willayd@willayd:~$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>--depth<span class="o">=</span><span class="m">1</span><span class="w"> </span>-b<span class="w"> </span><span class="m">1</span>.5.x<span class="w"> </span>https://github.com/pandas-dev/pandas.git<span class="w"> </span>~/code/pandas-1.5
+willayd@willayd:~$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>~/code/pandas-1.5
+willayd@willayd:~$<span class="w"> </span>git<span class="w"> </span>checkout<span class="w"> </span>778ab82
 </pre></div>
 <p>For data we can use the US Census <a class="reference external" href="https://www.census.gov/data/datasets/2020/econ/susb/2020-susb.html">2020 SUSB Annual Datasets by Establishment Industry</a> file, which contains this <a class="reference external" href="https://www2.census.gov/programs-surveys/susb/datasets/2020/us_state_6digitnaics_2020.txt">raw data</a>. Save the raw data to a file name <cite>us_state_6digitnaics_2020.txt</cite> located in <cite>~/code/pandas-1.5</cite>.</p>
 <p>At this point we have data and the supporting files we need. If using docker, start up your container with <tt class="docutils literal">docker run <span class="pre">--rm</span> <span class="pre">-it</span> <span class="pre">-v</span> <span class="pre">${HOME}/code/pandas-1.5:/data</span> <span class="pre">-w</span> /data <span class="pre">willayd/blog-posts:pandas-callgrind</span></tt>.</p>
@@ -123,14 +123,14 @@ willayd@willayd:~$ git checkout 778ab82
 <h2 id="building-pandas-for-use-with-callgrind">Building pandas for use with callgrind</h2>
 <p>In the simplest of use cases, we can follow the <a class="reference external" href="https://pandas.pydata.org/pandas-docs/version/1.5/development/contributing_environment.html">standard pandas instructions</a> for building the library and run it via callgrind to get a high level summary of which <em>functions</em> are taking the most time. However, we can do better and get <em>line-level</em> profiling if we compile our C extensions with debugging symbols.</p>
 <p>If you worked through my previous article on <a class="reference external" href="https://willayd.com/fundamental-python-debugging-part-1-python.html">debugging Python extensions</a> you would have seen us do this directly via gcc by passing the <cite>-g3</cite> flag. In our current use case with the pandas code base, we follow their documented instructions for <a class="reference external" href="https://pandas.pydata.org/pandas-docs/version/1.5/development/debugging_extensions.html">debugging C extensions in pandas</a> and instead use a <cite>--with-debugging-symbols</cite> flag. Both ultimately get us to the same place.</p>
-<div class="highlight"><pre><span></span>root@90e75e54ee98:/data# python3 setup.py clean --all
-root@90e75e54ee98:/data# python3 setup.py build_ext --inplace -j4 --with-debugging-symbols
-Compiling pandas/_libs/algos.pyx because it changed.
-Compiling pandas/_libs/arrays.pyx because it changed.
+<div class="highlight"><pre><span></span>root@90e75e54ee98:/data#<span class="w"> </span>python3<span class="w"> </span>setup.py<span class="w"> </span>clean<span class="w"> </span>--all
+root@90e75e54ee98:/data#<span class="w"> </span>python3<span class="w"> </span>setup.py<span class="w"> </span>build_ext<span class="w"> </span>--inplace<span class="w"> </span>-j4<span class="w"> </span>--with-debugging-symbols
+Compiling<span class="w"> </span>pandas/_libs/algos.pyx<span class="w"> </span>because<span class="w"> </span>it<span class="w"> </span>changed.
+Compiling<span class="w"> </span>pandas/_libs/arrays.pyx<span class="w"> </span>because<span class="w"> </span>it<span class="w"> </span>changed.
 ...
-copying build/lib.linux-x86_64-cpython-310-pydebug/pandas/_libs/writers.cpython-310d-x86_64-linux-gnu.so -&gt; pandas/_libs
-copying build/lib.linux-x86_64-cpython-310-pydebug/pandas/io/sas/_sas.cpython-310d-x86_64-linux-gnu.so -&gt; pandas/io/sas
-copying build/lib.linux-x86_64-cpython-310-pydebug/pandas/_libs/json.cpython-310d-x86_64-linux-gnu.so -&gt; pandas/_libs
+copying<span class="w"> </span>build/lib.linux-x86_64-cpython-310-pydebug/pandas/_libs/writers.cpython-310d-x86_64-linux-gnu.so<span class="w"> </span>-&gt;<span class="w"> </span>pandas/_libs
+copying<span class="w"> </span>build/lib.linux-x86_64-cpython-310-pydebug/pandas/io/sas/_sas.cpython-310d-x86_64-linux-gnu.so<span class="w"> </span>-&gt;<span class="w"> </span>pandas/io/sas
+copying<span class="w"> </span>build/lib.linux-x86_64-cpython-310-pydebug/pandas/_libs/json.cpython-310d-x86_64-linux-gnu.so<span class="w"> </span>-&gt;<span class="w"> </span>pandas/_libs
 root@90e75e54ee98:/data#
 </pre></div>
 <p>Your build should have completed without error. If you run into any issues with the compilation you can try reducing the parallel compilation by removing the <cite>-j4</cite> flag; this will make your build take longer but should be stable (see <a class="reference external" href="https://github.com/pandas-dev/pandas/issues/47305">issue #47305</a> for background information).</p>
@@ -140,87 +140,87 @@ root@90e75e54ee98:/data#
 <p>With the build out of the way, we can now run our program under callgrind. To do this execute <tt class="docutils literal">valgrind <span class="pre">--tool=callgrind</span> <span class="pre">--callgrind-out-file=callgrind.out</span> python3 <span class="pre">-c</span> "import pandas as pd; <span class="pre">pd.read_csv('us_state_6digitnaics_2020.txt',</span> <span class="pre">encoding='cp1252')"</span></tt>. This one command runs our read_csv call while being traced by callgrind, and writes the results of the trace to <cite>callground.out</cite> for us. Note that this adds some call overhead, so expect execution to be slower than normal.</p>
 <p>By default the output from callgrind is not very readable. Interested readers can peruse the <a class="reference external" href="https://valgrind.org/docs/manual/cl-format.html">Callgrind Format Specification</a> for a deeper understanding, but for this article we will use the <cite>callgrind_annotate</cite> command to inspect the output. This writes to stdout by default, so let's run it to a pager like <cite>less</cite> via <tt class="docutils literal">callgrind_annotate callgrind.out | less</tt>. The contents should look as follows:</p>
 <div class="highlight"><pre><span></span>--------------------------------------------------------------------------------
-Profile data file <span class="s1">'callgrind.out'</span> <span class="o">(</span>creator: callgrind-3.18.1<span class="o">)</span>
+Profile<span class="w"> </span>data<span class="w"> </span>file<span class="w"> </span><span class="s1">'callgrind.out'</span><span class="w"> </span><span class="o">(</span>creator:<span class="w"> </span>callgrind-3.18.1<span class="o">)</span>
 --------------------------------------------------------------------------------
-I1 cache:
-D1 cache:
-LL cache:
-Timerange: Basic block <span class="m">0</span> - <span class="m">3894679122</span>
-Trigger: Program termination
-Profiled target:  python3 -c import pandas as pd<span class="p">;</span> pd.read_csv<span class="o">(</span><span class="s1">'us_state_6digitnaics_2020.txt'</span>, <span class="nv">encoding</span><span class="o">=</span><span class="s1">'cp1252'</span><span class="o">)</span> <span class="o">(</span>PID <span class="m">439</span>, part <span class="m">1</span><span class="o">)</span>
-Events recorded:  Ir
-Events shown:     Ir
-Event sort order: Ir
-Thresholds:       <span class="m">99</span>
-Include dirs:
-User annotated:
-Auto-annotation:  on
+I1<span class="w"> </span>cache:
+D1<span class="w"> </span>cache:
+LL<span class="w"> </span>cache:
+Timerange:<span class="w"> </span>Basic<span class="w"> </span>block<span class="w"> </span><span class="m">0</span><span class="w"> </span>-<span class="w"> </span><span class="m">3894679122</span>
+Trigger:<span class="w"> </span>Program<span class="w"> </span>termination
+Profiled<span class="w"> </span>target:<span class="w">  </span>python3<span class="w"> </span>-c<span class="w"> </span>import<span class="w"> </span>pandas<span class="w"> </span>as<span class="w"> </span>pd<span class="p">;</span><span class="w"> </span>pd.read_csv<span class="o">(</span><span class="s1">'us_state_6digitnaics_2020.txt'</span>,<span class="w"> </span><span class="nv">encoding</span><span class="o">=</span><span class="s1">'cp1252'</span><span class="o">)</span><span class="w"> </span><span class="o">(</span>PID<span class="w"> </span><span class="m">439</span>,<span class="w"> </span>part<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+Events<span class="w"> </span>recorded:<span class="w">  </span>Ir
+Events<span class="w"> </span>shown:<span class="w">     </span>Ir
+Event<span class="w"> </span>sort<span class="w"> </span>order:<span class="w"> </span>Ir
+Thresholds:<span class="w">       </span><span class="m">99</span>
+Include<span class="w"> </span>dirs:
+User<span class="w"> </span>annotated:
+Auto-annotation:<span class="w">  </span>on
 
 --------------------------------------------------------------------------------
 Ir
 --------------------------------------------------------------------------------
-<span class="m">14</span>,377,625,638 <span class="o">(</span><span class="m">100</span>.0%<span class="o">)</span>  PROGRAM TOTALS
+<span class="m">14</span>,377,625,638<span class="w"> </span><span class="o">(</span><span class="m">100</span>.0%<span class="o">)</span><span class="w">  </span>PROGRAM<span class="w"> </span>TOTALS
 
 --------------------------------------------------------------------------------
-Ir                      file:function
+Ir<span class="w">                      </span>file:function
 --------------------------------------------------------------------------------
-<span class="m">3</span>,070,417,258 <span class="o">(</span><span class="m">21</span>.36%<span class="o">)</span>  pandas/_libs/src/parser/tokenizer.c:tokenize_bytes <span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
-<span class="m">1</span>,156,873,554 <span class="o">(</span> <span class="m">8</span>.05%<span class="o">)</span>  /clones/cpython/Objects/unicodeobject.c:_PyUnicode_CheckConsistency <span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
-<span class="m">1</span>,138,167,522 <span class="o">(</span> <span class="m">7</span>.92%<span class="o">)</span>  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms <span class="o">[</span>/usr/lib/x86_64-linux-gnu/libc.so.6<span class="o">]</span>
-  <span class="m">809</span>,119,661 <span class="o">(</span> <span class="m">5</span>.63%<span class="o">)</span>  /clones/cpython/Objects/unicodeobject.c:charmap_decode_string <span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
-  <span class="m">578</span>,399,204 <span class="o">(</span> <span class="m">4</span>.02%<span class="o">)</span>  pandas/_libs/src/klib/khash.h:__ac_X31_hash_string <span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
-  <span class="m">551</span>,577,239 <span class="o">(</span> <span class="m">3</span>.84%<span class="o">)</span>  pandas/_libs/src/parser/tokenizer.c:str_to_int64 <span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
-  <span class="m">415</span>,452,456 <span class="o">(</span> <span class="m">2</span>.89%<span class="o">)</span>  pandas/_libs/src/parser/tokenizer.c:end_field <span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
-  <span class="m">361</span>,558,111 <span class="o">(</span> <span class="m">2</span>.51%<span class="o">)</span>  pandas/_libs/parsers.c:__pyx_f_6pandas_5_libs_7parsers__string_box_utf8 <span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
-  <span class="m">310</span>,112,056 <span class="o">(</span> <span class="m">2</span>.16%<span class="o">)</span>  /clones/cpython/Python/ceval.c:_PyEval_EvalFrameDefault<span class="err">'</span><span class="m">2</span> <span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
+<span class="m">3</span>,070,417,258<span class="w"> </span><span class="o">(</span><span class="m">21</span>.36%<span class="o">)</span><span class="w">  </span>pandas/_libs/src/parser/tokenizer.c:tokenize_bytes<span class="w"> </span><span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
+<span class="m">1</span>,156,873,554<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">8</span>.05%<span class="o">)</span><span class="w">  </span>/clones/cpython/Objects/unicodeobject.c:_PyUnicode_CheckConsistency<span class="w"> </span><span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
+<span class="m">1</span>,138,167,522<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">7</span>.92%<span class="o">)</span><span class="w">  </span>./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms<span class="w"> </span><span class="o">[</span>/usr/lib/x86_64-linux-gnu/libc.so.6<span class="o">]</span>
+<span class="w">  </span><span class="m">809</span>,119,661<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">5</span>.63%<span class="o">)</span><span class="w">  </span>/clones/cpython/Objects/unicodeobject.c:charmap_decode_string<span class="w"> </span><span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
+<span class="w">  </span><span class="m">578</span>,399,204<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">4</span>.02%<span class="o">)</span><span class="w">  </span>pandas/_libs/src/klib/khash.h:__ac_X31_hash_string<span class="w"> </span><span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
+<span class="w">  </span><span class="m">551</span>,577,239<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">3</span>.84%<span class="o">)</span><span class="w">  </span>pandas/_libs/src/parser/tokenizer.c:str_to_int64<span class="w"> </span><span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
+<span class="w">  </span><span class="m">415</span>,452,456<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">2</span>.89%<span class="o">)</span><span class="w">  </span>pandas/_libs/src/parser/tokenizer.c:end_field<span class="w"> </span><span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
+<span class="w">  </span><span class="m">361</span>,558,111<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">2</span>.51%<span class="o">)</span><span class="w">  </span>pandas/_libs/parsers.c:__pyx_f_6pandas_5_libs_7parsers__string_box_utf8<span class="w"> </span><span class="o">[</span>/data/pandas/_libs/parsers.cpython-310d-x86_64-linux-gnu.so<span class="o">]</span>
+<span class="w">  </span><span class="m">310</span>,112,056<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">2</span>.16%<span class="o">)</span><span class="w">  </span>/clones/cpython/Python/ceval.c:_PyEval_EvalFrameDefault<span class="err">'</span><span class="m">2</span><span class="w"> </span><span class="o">[</span>/usr/local/bin/python3.10<span class="o">]</span>
 </pre></div>
 <p>The first thing to note is the total number of <cite>Instructions Read (Ir)</cite> for the program, which comes out to 14,377,625,638 instructions. Towards the bottom of the above snippet we see the top three function calls are <cite>tokenize_bytes</cite>, <cite>_PyUnicode_CheckConsistency</cite>, and <cite>__memset_avx2_unaligned_arms</cite>. Those are listed at 3,070,417,258 then 1,156,873,554 then 1,138,167,522 instructions in total, respectively. The total instructions in the first column of each of these functions is followed by a relative percentage to the total Ir of the program.</p>
 <p>The main function of interest to us will be the very first one, not only because it represents the largest amount of instructions, but also because it comes directly from our user code. The second function comes from <cite>_PyUnicode_CheckConsistency</cite> in the CPython standard library, and the third function comes from assembly code bundled with <a class="reference external" href="https://www.gnu.org/software/libc/">libc</a>. While we may learn something from diving further into those, we have less control to change them than our user code.</p>
 <p>At this point we know <cite>tokenize_bytes</cite> is where we spend the most time, but if you look at the source code you will see that it is a pretty big function. So how do we know <em>where</em> within this function we are spending our time?</p>
 <p>Since we compiled our application with debug symbols, callgrind fortunately gives us <em>line level</em> profiling information further down in the file. Assuming you paged the <cite>callgrind_annotate</cite> output to <cite>less</cite> in the above command, input <tt class="docutils literal">/tokenize_bytes</tt> and hit <tt class="docutils literal">n</tt> to page through search results until you find the annotated function.</p>
-<div class="highlight"><pre><span></span>            .           int tokenize_bytes<span class="o">(</span>parser_t *self,
-        <span class="m">1</span>,428 <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>                     size_t line_limit, uint64_t start_lines<span class="o">)</span> <span class="o">{</span>
-            .               int64_t i<span class="p">;</span>
-            .               uint64_t slen<span class="p">;</span>
-            .               int should_skip<span class="p">;</span>
-            .               char c<span class="p">;</span>
-            .               char *stream<span class="p">;</span>
-        <span class="m">1</span>,224 <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>      char *buf <span class="o">=</span> self-&gt;data + self-&gt;datapos<span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="w">            </span>.<span class="w">           </span>int<span class="w"> </span>tokenize_bytes<span class="o">(</span>parser_t<span class="w"> </span>*self,
+<span class="w">        </span><span class="m">1</span>,428<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">                     </span>size_t<span class="w"> </span>line_limit,<span class="w"> </span>uint64_t<span class="w"> </span>start_lines<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">            </span>.<span class="w">               </span>int64_t<span class="w"> </span>i<span class="p">;</span>
+<span class="w">            </span>.<span class="w">               </span>uint64_t<span class="w"> </span>slen<span class="p">;</span>
+<span class="w">            </span>.<span class="w">               </span>int<span class="w"> </span>should_skip<span class="p">;</span>
+<span class="w">            </span>.<span class="w">               </span>char<span class="w"> </span>c<span class="p">;</span>
+<span class="w">            </span>.<span class="w">               </span>char<span class="w"> </span>*stream<span class="p">;</span>
+<span class="w">        </span><span class="m">1</span>,224<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">      </span>char<span class="w"> </span>*buf<span class="w"> </span><span class="o">=</span><span class="w"> </span>self-&gt;data<span class="w"> </span>+<span class="w"> </span>self-&gt;datapos<span class="p">;</span>
 .
-        <span class="m">1</span>,224 <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>      const char <span class="nv">lineterminator</span> <span class="o">=</span> <span class="o">(</span>self-&gt;lineterminator <span class="o">==</span> <span class="s1">'\0'</span><span class="o">)</span> ?
-            .                       <span class="s1">'\n'</span> : self-&gt;lineterminator<span class="p">;</span>
-            .
-            .               // <span class="m">1000</span> is something that couldn<span class="s1">'t fit in "char"</span>
+<span class="w">        </span><span class="m">1</span>,224<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">      </span>const<span class="w"> </span>char<span class="w"> </span><span class="nv">lineterminator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>self-&gt;lineterminator<span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s1">'\0'</span><span class="o">)</span><span class="w"> </span>?
+<span class="w">            </span>.<span class="w">                       </span><span class="s1">'\n'</span><span class="w"> </span>:<span class="w"> </span>self-&gt;lineterminator<span class="p">;</span>
+<span class="w">            </span>.
+<span class="w">            </span>.<span class="w">               </span>//<span class="w"> </span><span class="m">1000</span><span class="w"> </span>is<span class="w"> </span>something<span class="w"> </span>that<span class="w"> </span>couldn<span class="s1">'t fit in "char"</span>
 <span class="s1">            .               // thus comparing a char to it would always be "false"</span>
 <span class="s1">        1,428 ( 0.00%)      const int carriage_symbol = (self-&gt;lineterminator == '</span><span class="se">\0</span><span class="s1">') ? '</span><span class="se">\r</span><span class="s1">' : 1000;</span>
 <span class="s1">          612 ( 0.00%)      const int comment_symbol = (self-&gt;commentchar != '</span><span class="se">\0</span><span class="s1">') ?</span>
 <span class="s1">          612 ( 0.00%)              self-&gt;commentchar : 1000;</span>
-<span class="s1">          612 ( 0.00%)      const int escape_symbol = (self-&gt;escapechar != '</span><span class="se">\0</span><span class="err">'</span><span class="o">)</span> ?
-          <span class="m">612</span> <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>              self-&gt;escapechar : <span class="m">1000</span><span class="p">;</span>
-            .
-        <span class="m">2</span>,652 <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>      <span class="k">if</span> <span class="o">(</span>make_stream_space<span class="o">(</span>self, self-&gt;datalen - self-&gt;datapos<span class="o">)</span> &lt; <span class="m">0</span><span class="o">)</span> <span class="o">{</span>
-   <span class="m">19</span>,380,953 <span class="o">(</span> <span class="m">0</span>.13%<span class="o">)</span>  <span class="o">=</span>&gt; pandas/_libs/src/parser/tokenizer.c:make_stream_space <span class="o">(</span>204x<span class="o">)</span>
-            .                   int64_t <span class="nv">bufsize</span> <span class="o">=</span> <span class="m">100</span><span class="p">;</span>
-            .                   self-&gt;error_msg <span class="o">=</span> malloc<span class="o">(</span>bufsize<span class="o">)</span><span class="p">;</span>
-            .                   snprintf<span class="o">(</span>self-&gt;error_msg, bufsize, <span class="s2">"out of memory"</span><span class="o">)</span><span class="p">;</span>
-            .                   <span class="k">return</span> -1<span class="p">;</span>
-            .               <span class="o">}</span>
-            .
-        <span class="m">1</span>,224 <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>      <span class="nv">stream</span> <span class="o">=</span> self-&gt;stream + self-&gt;stream_len<span class="p">;</span>
-          <span class="m">612</span> <span class="o">(</span> <span class="m">0</span>.00%<span class="o">)</span>      <span class="nv">slen</span> <span class="o">=</span> self-&gt;stream_len<span class="p">;</span>
+<span class="s1">          612 ( 0.00%)      const int escape_symbol = (self-&gt;escapechar != '</span><span class="se">\0</span><span class="err">'</span><span class="o">)</span><span class="w"> </span>?
+<span class="w">          </span><span class="m">612</span><span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">              </span>self-&gt;escapechar<span class="w"> </span>:<span class="w"> </span><span class="m">1000</span><span class="p">;</span>
+<span class="w">            </span>.
+<span class="w">        </span><span class="m">2</span>,652<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>make_stream_space<span class="o">(</span>self,<span class="w"> </span>self-&gt;datalen<span class="w"> </span>-<span class="w"> </span>self-&gt;datapos<span class="o">)</span><span class="w"> </span>&lt;<span class="w"> </span><span class="m">0</span><span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">   </span><span class="m">19</span>,380,953<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.13%<span class="o">)</span><span class="w">  </span><span class="o">=</span>&gt;<span class="w"> </span>pandas/_libs/src/parser/tokenizer.c:make_stream_space<span class="w"> </span><span class="o">(</span>204x<span class="o">)</span>
+<span class="w">            </span>.<span class="w">                   </span>int64_t<span class="w"> </span><span class="nv">bufsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">100</span><span class="p">;</span>
+<span class="w">            </span>.<span class="w">                   </span>self-&gt;error_msg<span class="w"> </span><span class="o">=</span><span class="w"> </span>malloc<span class="o">(</span>bufsize<span class="o">)</span><span class="p">;</span>
+<span class="w">            </span>.<span class="w">                   </span>snprintf<span class="o">(</span>self-&gt;error_msg,<span class="w"> </span>bufsize,<span class="w"> </span><span class="s2">"out of memory"</span><span class="o">)</span><span class="p">;</span>
+<span class="w">            </span>.<span class="w">                   </span><span class="k">return</span><span class="w"> </span>-1<span class="p">;</span>
+<span class="w">            </span>.<span class="w">               </span><span class="o">}</span>
+<span class="w">            </span>.
+<span class="w">        </span><span class="m">1</span>,224<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">      </span><span class="nv">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self-&gt;stream<span class="w"> </span>+<span class="w"> </span>self-&gt;stream_len<span class="p">;</span>
+<span class="w">          </span><span class="m">612</span><span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.00%<span class="o">)</span><span class="w">      </span><span class="nv">slen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span>self-&gt;stream_len<span class="p">;</span>
 </pre></div>
 <p>The above snippet shows that every line in our source file is being annotated, along with the count / total percentage of <cite>Instruction Read</cite> event counts. You can use the <tt class="docutils literal">f</tt> and <tt class="docutils literal">b</tt> shortcuts to move forward and backwards through this source code, looking for lines that could be optimized. Paging through the output you will things like:</p>
-<div class="highlight"><pre><span></span><span class="m">610</span>,811,124 <span class="o">(</span> <span class="m">4</span>.25%<span class="o">)</span>          switch <span class="o">(</span>self-&gt;state<span class="o">)</span> <span class="o">{</span>
-          .                       <span class="k">case</span> START_FIELD_IN_SKIP_LINE:
-          .                           <span class="k">if</span> <span class="o">(</span>IS_TERMINATOR<span class="o">(</span>c<span class="o">))</span> <span class="o">{</span>
-          .                               END_LINE<span class="o">()</span><span class="p">;</span>
+<div class="highlight"><pre><span></span><span class="m">610</span>,811,124<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">4</span>.25%<span class="o">)</span><span class="w">          </span>switch<span class="w"> </span><span class="o">(</span>self-&gt;state<span class="o">)</span><span class="w"> </span><span class="o">{</span>
+<span class="w">          </span>.<span class="w">                       </span><span class="k">case</span><span class="w"> </span>START_FIELD_IN_SKIP_LINE:
+<span class="w">          </span>.<span class="w">                           </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>IS_TERMINATOR<span class="o">(</span>c<span class="o">))</span><span class="w"> </span><span class="o">{</span>
+<span class="w">          </span>.<span class="w">                               </span>END_LINE<span class="o">()</span><span class="p">;</span>
 </pre></div>
 <p>and</p>
-<div class="highlight"><pre><span></span>          .                               self-&gt;state <span class="o">=</span> ESCAPED_CHAR<span class="p">;</span>
-<span class="m">445</span>,004,236 <span class="o">(</span> <span class="m">3</span>.10%<span class="o">)</span>                  <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span>IS_DELIMITER<span class="o">(</span>c<span class="o">))</span> <span class="o">{</span>
-          .                               // end of field - end of line not reached yet
-<span class="m">104</span>,886,583 <span class="o">(</span> <span class="m">0</span>.73%<span class="o">)</span>                      END_FIELD<span class="o">()</span><span class="p">;</span>
-<span class="m">536</span>,772,513 <span class="o">(</span> <span class="m">3</span>.73%<span class="o">)</span>  <span class="o">=</span>&gt; pandas/_libs/src/parser/tokenizer.c:end_field <span class="o">(</span><span class="m">6</span>,169,799x<span class="o">)</span>
+<div class="highlight"><pre><span></span><span class="w">          </span>.<span class="w">                               </span>self-&gt;state<span class="w"> </span><span class="o">=</span><span class="w"> </span>ESCAPED_CHAR<span class="p">;</span>
+<span class="m">445</span>,004,236<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">3</span>.10%<span class="o">)</span><span class="w">                  </span><span class="o">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="o">(</span>IS_DELIMITER<span class="o">(</span>c<span class="o">))</span><span class="w"> </span><span class="o">{</span>
+<span class="w">          </span>.<span class="w">                               </span>//<span class="w"> </span>end<span class="w"> </span>of<span class="w"> </span>field<span class="w"> </span>-<span class="w"> </span>end<span class="w"> </span>of<span class="w"> </span>line<span class="w"> </span>not<span class="w"> </span>reached<span class="w"> </span>yet
+<span class="m">104</span>,886,583<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">0</span>.73%<span class="o">)</span><span class="w">                      </span>END_FIELD<span class="o">()</span><span class="p">;</span>
+<span class="m">536</span>,772,513<span class="w"> </span><span class="o">(</span><span class="w"> </span><span class="m">3</span>.73%<span class="o">)</span><span class="w">  </span><span class="o">=</span>&gt;<span class="w"> </span>pandas/_libs/src/parser/tokenizer.c:end_field<span class="w"> </span><span class="o">(</span><span class="m">6</span>,169,799x<span class="o">)</span>
 </pre></div>
 <p>These are indicators that the lines <tt class="docutils literal">switch <span class="pre">(self-&gt;state)</span> {</tt>, <tt class="docutils literal">{ else if (IS_DELIMITER(c)) {</tt>, and the expansion of the <tt class="docutils literal"><span class="pre">END_FIELD();</span></tt> macro (which inserts calls to <tt class="docutils literal">end_field</tt>) take up 4.25%, 3.10% and 3.73% of your application runtime. Much of this has to do with the fact that these functions are invoked very often, so while they may not be <em>slow</em> in a traditional sense, you as a developer may decide that you need to still find a faster way to implement these.</p>
 </div>
