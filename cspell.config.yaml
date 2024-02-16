@@ -1,0 +1,7 @@
+patterns:
+  - name: markdown_code_block
+    pattern: /(```+)\\s?sh[\\s\\S]+?\\1/g
+languageSettings:
+  - languageId: markdown
+    ignoreRegExpList:
+      - markdown_code_block
