@@ -5,6 +5,7 @@ categories:
   - debugging
 tags:
   - python
+  - c
 # cSpell:ignore willayd Cython cpython SSIZE VARARGS struct MODINIT Werror dylib tracepoints watchpoints libthread cfunctions kwargs methodobject tstate nargs Vectorcall Tstate nargsf kwnames oparg ceval throwflag DECREF MODINIT SIGABRT pthread pylifecycle Watchpoint Disp watchpoint curexc psize unicodeobject refcnt cfunction argstuple kwdict SIGSEGV libc Traceback libpython
 ---
 
