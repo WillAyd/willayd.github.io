@@ -72,10 +72,6 @@ author:
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/will-ayd/"
 
-logo:
-  links:
-    - url: /assets/images/bio-photo.jpg
-
 footer:
   links:
     - label: "GitHub"
@@ -97,6 +93,7 @@ defaults:
       comments: true
       share: true
       related: true
+      image: /assets/images/bio-photo.jpg
   # _pages
   - scope:
       path: "_pages"
