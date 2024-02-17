@@ -13,7 +13,7 @@ For the unaware, Cython is a transpiler from a Python-like syntax into C files. 
 
 In spite of this pattern we are introducing Cython as the third part of the debugging series, after already having debugged C extensions. Why is that? Well, it turns out that the Cython debugger is in fact a [gdb python extension](https://sourceware.org/gdb/onlinedocs/gdb/Python.html#Python), which we saw CPython also leverage in the last chapter. We aren't doing anything novel in this chapter but just walking through some of the conveniences the ``cygdb` extension provides (interested users can find the source code [here](https://github.com/cython/cython/blob/master/Cython/Debugger/Cygdb.py)).
 
-If you haven't read the [previous article on debugging Python extensions with gdb]({% post_url 2023-02-22-fundamental-python-debugging-part-2-python %}), I highly recommend that you do so before continuing here. Although writing Cython can be thought of as a stepping stone to writing C/C++ extensions, the inverse is true when it comes to debugging.
+If you haven't read the [previous article on debugging Python extensions with gdb]({% post_url 2023-02-22-fundamental-python-debugging-part-2-python-extensions %}), I highly recommend that you do so before continuing here. Although writing Cython can be thought of as a stepping stone to writing C/C++ extensions, the inverse is true when it comes to debugging.
 
 ## Setting up our environment
 
