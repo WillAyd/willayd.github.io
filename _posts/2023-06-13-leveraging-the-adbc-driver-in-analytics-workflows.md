@@ -1,6 +1,7 @@
 ---
 title: "Leveraging the ADBC driver in Analytics Workflows"
 date: 2023-06-16T00:00:00
+description: This blog post describes the actively developed ADBC driver and what it means for libraries like pandas.
 categories:
   - performance
 tags:

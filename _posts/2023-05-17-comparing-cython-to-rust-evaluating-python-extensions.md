@@ -1,6 +1,7 @@
 ---
 title: "Comparing Cython to Rust - Evaluating Python Extensions"
 date: 2023-05-17T00:00:00
+description: This blog post compares the process of creating a Python in extension in Rust versus Cython.
 categories:
   - performance
 tags:

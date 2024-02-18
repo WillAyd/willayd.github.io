@@ -1,6 +1,7 @@
 ---
 title: "Profiling Python Extensions with callgrind"
 date: 2023-04-03T00:00:00
+description: This blog post teaches you how to profile Python extensions using callgrind.
 categories:
   - profiling
 tags:

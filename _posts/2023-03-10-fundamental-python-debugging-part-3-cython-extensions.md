@@ -1,5 +1,6 @@
 ---
 title: "Fundamental Python Debugging Part 3 - Cython Extensions"
+description: This blog post teaches you how to debug Cython extensions to Python. It is part 3 of a 3 part series.
 date: 2023-03-10T00:00:00
 categories:
   - debugging

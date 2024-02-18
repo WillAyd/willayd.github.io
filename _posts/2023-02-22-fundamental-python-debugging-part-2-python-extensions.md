@@ -1,6 +1,7 @@
 ---
 title: "Fundamental Python Debugging Part 2 - Python Extensions"
 date: 2023-02-22T00:00:00
+description: This blog post teaches you how to debug C extensions to Python. It is part 2 of a 3 part series.
 categories:
   - debugging
 tags:

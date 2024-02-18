@@ -1,6 +1,7 @@
 ---
 title: "Fundamental Python Debugging Part 1 - Python"
 date: 2023-02-08T00:00:00
+description: This blog post teaches you how to navigate pdb, the Python debugger. It is part 1 of a 3 part series.
 categories:
   - debugging
 tags:
