@@ -23,6 +23,8 @@ github_username: WillAyd
 minimal_mistakes_skin: default
 search: true
 og_image: /assets/images/og-image.jpg
+twitter:
+ username: willayd555
 
 # Build settings
 markdown: kramdown
