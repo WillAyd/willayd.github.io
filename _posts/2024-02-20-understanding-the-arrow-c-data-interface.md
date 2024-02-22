@@ -7,7 +7,7 @@ categories:
 tags:
   - python
   - arrow
-# cSpell:ignore pantab BITMASK BYTEMASK nanoarrow pyarrow pydict adbc ADBC Joris Bossche bitmasks
+# cSpell:ignore pantab BITMASK BYTEMASK nanoarrow pyarrow pydict adbc ADBC Joris Bossche bitmasks itertuples
 ---
 
 The [Arrow C Data Interface](https://arrow.apache.org/docs/format/CDataInterface.html) is an amazing tool, and while it documents its own potential use cases I wanted to dedicate a blog post to my personal experience using it.
@@ -25,6 +25,14 @@ As you may or may not already be aware, most high-performance Python libraries i
 Late in 2023 I decided that pantab was due for a rewrite. Hacking into the pandas internals was not going to work any more, especially as the number of data types that pandas supported started to grow. What pantab needed was an agreement with a library like pandas as to how to exchange low-level data at an extremely high level of performance.
 
 Fortunately, I wasn't the only person with that idea. Data interchange libraries that weren't even a thought when pantab started were now a reality, so it was time to test those out.
+
+## Status Quo
+
+When it was first created, pantab used used [pandas.DataFrame.itertuples](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.itertuples.html) to loop over every row and every element within a DataFrame before writing it out to a Hyper file. While this worked and was faster than what most users would write by hand, it still really wasn't that fast. By looping in Python and using tuples, every value in the DataFrame would be converted to a Python object.
+
+A later version of pantab which required a minimum of pandas 1.3 ended up hacking into the internals of pandas, calling something like ``df._mgr.column_arrays`` to get a ``NumPy`` array for each column in the DataFrame. Combined with the [NumPy Array Iterator API](https://numpy.org/doc/stable/reference/c-api/iterator.html), pantab could iterate over raw NumPy arrays instead of doing a loop in Python. This helped a lot with performance, and while the NumPy Array Iterator API was solid, the pandas internals [would change across releases](https://github.com/innobi/pantab/issues/190).
+
+And so far we have just talked about writing. When it comes to reading, pantab would simply build up a Python array of PyObjects and try to convert to more appropriate data types after all data was read. A more efficient reader probably could have been built for primitive types like integers and floats to write to a buffer directly and create a NumPy array from that buffer, but string data *had* to be an array of Python objects. Given that limitation, I didn't even bother trying to do much here.
 
 ## Attempt 1: Python DataFrame Interchange Protocol
 
@@ -81,6 +89,10 @@ Almost immediately my issues went away. To wit:
   5. pandas implementation - pandas uses the [PyCapsule interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html#arrowstream-export) to transfer data
 
 This represented a significant times saving. With well defined memory semantics, a low-level API and clean nullability handling the amount of extension code I had to write was drastically reduced. I felt more confident in the implementation and had to deal with less memory corruption / crashes than before.
+
+Without going too deep in the benchmarks game, the Arrow C Data Interface implementation yielded a 25% performance improvement for me when writing strings. When reading data, it was more like a 500% improvement than what had been previously implemented. Not bad...
+
+On top of those improvements, I was able to implement *more data types* given the richness of the Arrow type system. And perhaps most importantly, my code is no longer tied to the fragile internals of one library. The Arrow C Data Interface is guaranteed to be stable, meaning less surprises for me as a developer in the future.
 
 ## Bonus Feature - Bring Your Own Library
 
