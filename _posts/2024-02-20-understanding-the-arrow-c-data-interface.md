@@ -41,11 +41,6 @@ digraph G {
     fillcolor=white
   ]
 
-  df [
-    color="#b2a896"
-    fillcolor="#edebe9"
-  ]
-
   rawdata [
     label = "df.itertuples()"
     color="#b20100"
@@ -69,10 +64,9 @@ digraph G {
 
   write [
     label = "Database write"
-    color="#b2a896"
-    fillcolor="#edebe9"
   ]
   convert -> write;
+}
 }-->
 
 <svg width="180pt" height="332pt"
@@ -80,23 +74,11 @@ digraph G {
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 328)">
 <title>G</title>
 <polygon fill="white" stroke="transparent" points="-4,4 -4,-328 176,-328 176,4 -4,4"/>
-<!-- df -->
-<g id="node1" class="node">
-<title>df</title>
-<polygon fill="#edebe9" stroke="#b2a896" points="113,-324 59,-324 59,-288 113,-288 113,-324"/>
-<text text-anchor="middle" x="86" y="-302.3" font-family="Times,serif" font-size="14.00">df</text>
-</g>
 <!-- rawdata -->
-<g id="node2" class="node">
+<g id="node1" class="node">
 <title>rawdata</title>
 <polygon fill="#edd5d5" stroke="#b20100" points="143.5,-252 28.5,-252 28.5,-216 143.5,-216 143.5,-252"/>
 <text text-anchor="middle" x="86" y="-230.3" font-family="Times,serif" font-size="14.00">df.itertuples()</text>
-</g>
-<!-- df&#45;&gt;rawdata -->
-<g id="edge1" class="edge">
-<title>df&#45;&gt;rawdata</title>
-<path fill="none" stroke="black" d="M86,-287.7C86,-279.98 86,-270.71 86,-262.11"/>
-<polygon fill="black" stroke="black" points="89.5,-262.1 86,-252.1 82.5,-262.1 89.5,-262.1"/>
 </g>
 <!-- forloop -->
 <g id="node3" class="node">
@@ -109,6 +91,18 @@ digraph G {
 <title>rawdata&#45;&gt;forloop</title>
 <path fill="none" stroke="black" d="M86,-215.7C86,-207.98 86,-198.71 86,-190.11"/>
 <polygon fill="black" stroke="black" points="89.5,-190.1 86,-180.1 82.5,-190.1 89.5,-190.1"/>
+</g>
+<!-- df -->
+<g id="node2" class="node">
+<title>df</title>
+<polygon fill="white" stroke="black" points="113,-324 59,-324 59,-288 113,-288 113,-324"/>
+<text text-anchor="middle" x="86" y="-302.3" font-family="Times,serif" font-size="14.00">df</text>
+</g>
+<!-- df&#45;&gt;rawdata -->
+<g id="edge1" class="edge">
+<title>df&#45;&gt;rawdata</title>
+<path fill="none" stroke="black" d="M86,-287.7C86,-279.98 86,-270.71 86,-262.11"/>
+<polygon fill="black" stroke="black" points="89.5,-262.1 86,-252.1 82.5,-262.1 89.5,-262.1"/>
 </g>
 <!-- convert -->
 <g id="node4" class="node">
@@ -125,7 +119,7 @@ digraph G {
 <!-- write -->
 <g id="node5" class="node">
 <title>write</title>
-<polygon fill="#edebe9" stroke="#b2a896" points="148.5,-36 23.5,-36 23.5,0 148.5,0 148.5,-36"/>
+<polygon fill="white" stroke="black" points="148.5,-36 23.5,-36 23.5,0 148.5,0 148.5,-36"/>
 <text text-anchor="middle" x="86" y="-14.3" font-family="Times,serif" font-size="14.00">Database write</text>
 </g>
 <!-- convert&#45;&gt;write -->
@@ -276,7 +270,7 @@ It is worth noting that so far we have only talked about writing a DataFrame to 
 
 ## Initial Redesign Attempt - Python DataFrame Interchange Protocol
 
-Before I ever considered the Arrow C Data Interface, my first try at getting high performance and easy data exchange from pandas to Hyper was through the [Python DataFrame interchange protocol](https://data-apis.org/dataframe-protocol/latest/purpose_and_scope.html). While initially promising, this soon became very problematic.
+Before I ever considered the Arrow C Data Interface, my first try at getting high performance and easy data exchange from pandas to Hyper was through the [Python DataFrame interchange protocol](https://data-apis.org/dataframe-protocol/latest/purpose_and_scope.html). While initially promising, this soon became problematic.
 
 For starters, *Memory ownership and lifetime* is listed as something in scope of the protocol, but the protocol defines nothing in particular about lifetimes, or copy / move semantics. As a result, implementers are free to choose how long a particular buffer should last, and it is up the client to just know this. After many unexpected segfaults, I started to grow weary of this solution.
 
