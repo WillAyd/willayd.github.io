@@ -1,5 +1,5 @@
 ---
-title: "Understanding the Arrow C Data Interface"
+title: "Leveraging the Arrow C Data Interface"
 date: 2024-02-20T00:00:00
 description: This blog post describes how the Arrow C Data interface works, as witnessed through transformation of the pantab library.
 categories:
