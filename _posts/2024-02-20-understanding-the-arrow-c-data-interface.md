@@ -16,11 +16,13 @@ The [Arrow C Data Interface](https://arrow.apache.org/docs/format/CDataInterface
 
 Transferring data across systems and libraries is difficult and time-consuming. This statement applies not only to compute time but perhaps more importantly to developer time as well.
 
-I first ran into this issue over 5 years ago when I started a library called [pantab](https://pantab.readthedocs.io/en/latest/). At the time, I had just become a core developer of [pandas](https://pandas.pydata.org/), and through consulting work had been dealing a lot with [Tableau](https://www.tableau.com/). Tableau had at that time just released their [Hyper API](https://www.tableau.com/developer/learning/tableau-hyper-api), which is a way to exchange data to/from their proprietary Hyper database.
+I first ran into this issue over 5 years ago when I started a library called [pantab](https://pantab.readthedocs.io/en/latest/). At the time, I had just become a core developer of [pandas](https://pandas.pydata.org/), and through consulting work had been dealing a lot with [Tableau](https://www.tableau.com/). Tableau had just released their [Hyper API](https://www.tableau.com/developer/learning/tableau-hyper-api), which is a way to exchange data to/from their proprietary Hyper database.
 
 *Great...*, I said to myself, *I know a lot of pandas internals and I think writing a DataFrame to a Hyper database will be easier than any other option*. Hence, pantab was created.
 
-As you may or may not already be aware, most high-performance Python libraries in the analytics space get their performance from implementing parts of their code base in *lower-level* languages like C/C++/Rust. So with pantab I set out to do the same thing. The problem, however, is that pandas did NOT expose any of its internal data structures to other libraries. As such, pantab hacked a lot of things to make this integration "work", but in a way that was very fragile across pandas releases.
+As you may or may not already be aware, most high-performance Python libraries in the analytics space get their performance from implementing parts of their code base in *lower-level* languages like C/C++/Rust. So with pantab I set out to do the same thing.
+
+The problem, however, is that pandas did NOT expose any of its internal data structures to other libraries. pantab was forced to hack a lot of things to make this integration "work", but in a way that was very fragile across pandas releases.
 
 Late in 2023 I decided that pantab was due for a rewrite. Hacking into the pandas internals was not going to work any more, especially as the number of data types that pandas supported started to grow. What pantab needed was an agreement with a library like pandas as to how to exchange low-level data at an extremely high level of performance.
 
@@ -266,13 +268,13 @@ digraph G {
 
 This helped a lot with performance, and while the NumPy Array Iterator API was solid, the pandas internals [would change across releases](https://github.com/innobi/pantab/issues/190), so it took a lot of developer time to maintain.
 
-It is worth noting that so far we have only talked about writing a DataFrame to a Hyper file. Going the other way around, pantab would create a Python list of PyObjects and convert to more appropriate data types after everything was read. If we were to graph that process, it would be even more red than what you see above - not good!
+The images and comments above assume we are writing a DataFrame to a Hyper file. Going the other way around, pantab would create a Python list of PyObjects and convert to more appropriate data types after everything was read. If we were to graph that process, it would be even more red - not good!
 
 ## Initial Redesign Attempt - Python DataFrame Interchange Protocol
 
 Before I ever considered the Arrow C Data Interface, my first try at getting high performance and easy data exchange from pandas to Hyper was through the [Python DataFrame interchange protocol](https://data-apis.org/dataframe-protocol/latest/purpose_and_scope.html). While initially promising, this soon became problematic.
 
-For starters, *Memory ownership and lifetime* is listed as something in scope of the protocol, but the protocol defines nothing in particular about lifetimes, or copy / move semantics. As a result, implementers are free to choose how long a particular buffer should last, and it is up the client to just know this. After many unexpected segfaults, I started to grow weary of this solution.
+For starters, *Memory ownership and lifetime* is listed as something in scope of the protocol, but is not actually defined. Implementers are free to choose how long a particular buffer should last, and it is up the client to just know this. After many unexpected segfaults, I started to grow weary of this solution.
 
 Another major issue for the interchange protocol is that *Non-Python API standardization (e.g., C/C++ APIs)* is explicitly a non-goal. With pantab being a consumer of raw data, this meant I had to know how to manage those raw buffers for every type I wished to consume.  While that may not be a huge deal for simple primitive types like sized integers, it leaves much to be desired when you try to work with more complex types like decimals.
 
@@ -304,7 +306,7 @@ class ColumnNullType(enum.IntEnum):
     USE_BYTEMASK = 4
 ```
 
-The way the DataFrame Interchange Protocol decided to handle nullability is an area where trying to be inclusive of many different strategies ended up as a detriment to all. Requiring developers to integrate potentially all of these methods across any type they may consume is a lot of effort (particularly for ``USE_SENTINEL``).
+The way the DataFrame Interchange Protocol decided to handle nullability is an area where trying to be inclusive of many different strategies ended up as a detriment to all. Requiring developers to integrate all of these methods across any type they may consume is a lot of effort (particularly for ``USE_SENTINEL``).
 
 Another limitation with the DataFrame Interchange Protocol is the fact that it only talks about how to consume data, but offers no guidance on how to produce it. If starting from your extension, you have no tools or library to manually build buffers. Much like the [status quo](#status-quo), this meant reading from a Hyper database to a pandas DataFrame would likely be going through Python objects.
 
@@ -316,13 +318,13 @@ After stumbling around the DataFrame Protocol Interface for a few weeks, [Joris 
 
 Almost immediately my issues went away. To wit:
 
-  1. Memory ownership and lifetime - this is [well defined](https://arrow.apache.org/docs/format/CDataInterface.html#memory-management) at low levels
-  2. API standardization - this is achieved via [nanoarrow](https://arrow.apache.org/nanoarrow/latest/index.html)
-  3. Nullability handling - this follows the Arrow format exclusively, which uses bitmasks
-  4. Constructing buffers from an extension - nanoarrow lets you create and not just read Arrow structures
-  5. pandas implementation - pandas uses the [PyCapsule interface](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html#arrowstream-export) to transfer data
+  1. Memory ownership and lifetime - [well defined](https://arrow.apache.org/docs/format/CDataInterface.html#memory-management) at low levels
+  2. Non-Python API - for this there is [nanoarrow](https://arrow.apache.org/nanoarrow/latest/index.html)
+  3. Nullability handling - uses Arrow bitmasks
+  4. Producing buffers - can create (not just read) data
+  5. pandas implementation - it *just works* via [PyCapsules](https://arrow.apache.org/docs/format/CDataInterface/PyCapsuleInterface.html#arrowstream-export)
 
-This represented a significant times saving. With well defined memory semantics, a low-level API and clean nullability handling, the amount of extension code I had to write was drastically reduced. I felt more confident in the implementation and had to deal with less memory corruption / crashes than before.
+With well defined memory semantics, a low-level API and clean nullability handling, the amount of extension code I had to write was drastically reduced. I felt more confident in the implementation and had to deal with less memory corruption / crashes than before. And, perhaps most importantly, I saved a lot of time.
 
 See the image below for a high level overview of the process. Note the lack of any red compared to the [status quo](#status-quo) - this has a very limited interaction with the Python runtime:
 
@@ -404,11 +406,13 @@ digraph G {
 
 Without going too deep in the benchmarks game, the Arrow C Data Interface implementation yielded a 25% performance improvement for me when writing strings. When reading data, it was more like a 500% improvement than what had been previously implemented. Not bad...
 
-On top of those improvements, I was able to implement *more data types* given the richness of the Arrow type system. And perhaps most importantly, my code is no longer tied to the fragile internals of one library. The Arrow C Data Interface is guaranteed to be stable, meaning less surprises for me as a developer in the future.
+My code is no longer tied to the potentially fragile internals of pandas, and with the stability of the Arrow C Data Interface things are far less likely to break when new versions are released.
 
 ## Bonus Feature - Bring Your Own Library
 
-While it wasn't my goal at the outset, implementing the Arrow C Data Interface had the benefit of decoupling a dependency on pandas. pandas was the de facto library when pantab was first written, but since then many high quality Arrow-based libraries have popped up. By using the Arrow C Data Interface, pantab was able to achieve a *bring your own DataFrame library mentality*.
+While it wasn't my goal at the outset, implementing the Arrow C Data Interface had the benefit of decoupling a dependency on pandas. pandas was the de facto library when pantab was first written, but since then many high quality Arrow-based libraries have popped up.
+
+With the Arrow C Data Interface, pantab now has a *bring your own DataFrame library mentality*.
 
 ```python
 >>> import pantab as pt
