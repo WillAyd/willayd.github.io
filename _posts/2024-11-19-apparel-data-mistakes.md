@@ -105,7 +105,7 @@ With that being the case, manufacturing partners are rarely ever managed within 
 
 Is that the best we can do with manufacturing data? Of course not! Think about the potential for automation - wouldn't it be cool to have more AI trained to automate tasks like folding and sewing? You can find any number of conceptual inventions on that front - here's one as an example:
 
-https://blogs.nvidia.com/blog/hugging-face-lerobot-open-source-robotics/
+[https://blogs.nvidia.com/blog/hugging-face-lerobot-open-source-robotics/](https://blogs.nvidia.com/blog/hugging-face-lerobot-open-source-robotics/)
 
 Sure, that's a very crude folding method and it probably won't change the labor landscape in the coming months. But how fast can we evolve that space? I would imagine that 99.9% of manufacturing data points are simply lost to time because we don't track them, and we don't have the incentives to do so. Maybe the next big thing in Apparel comes from having enough video data to train the robotics to perform these tasks at scale and efficiently?
 
