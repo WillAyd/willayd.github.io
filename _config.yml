@@ -62,7 +62,7 @@ plugins:
 author:
   name   : "Will Ayd"
   avatar : "/assets/images/bio-photo.jpg"
-  bio    : "Data Consultant / Solutions Architect by day, programmer by night."
+  bio    : "Retail Data Consultant<br /><a href='https://www.amazon.com/Pandas-Cookbook-Practical-scientific-exploratory/dp/1836205872' target='_blank'>Author - Pandas Cookbook</a>"
   links:
     - label: "Website"
       icon: "fas fa-fw fa-link"
