@@ -73,6 +73,9 @@ author:
     - label: "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/will-ayd/"
+    - label: "Book"
+      icon: "fas fa-fw fa-book"
+      url: "https://www.amazon.com/Pandas-Cookbook-Practical-scientific-exploratory/dp/1836205872"
 
 footer:
   links:
@@ -82,6 +85,9 @@ footer:
     - label: "LinkedIn"
       icon: "fab fa-fw fa-linkedin"
       url: "https://www.linkedin.com/in/will-ayd/"
+    - label: "Book"
+      icon: "fas fa-fw fa-book"
+      url: "https://www.amazon.com/Pandas-Cookbook-Practical-scientific-exploratory/dp/1836205872"
 
 defaults:
   # _posts
